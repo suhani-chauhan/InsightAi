@@ -58,6 +58,69 @@ def test_empty_rows_rejected(client_as_a):
     assert resp.status_code == 422  # schema min_length
 
 
+def test_upload_csv_creates_session(client_as_a):
+    csv = "name,age,city\nAda,36,London\nAlan,41,Manchester\nGrace,45,New York\n"
+    resp = client_as_a.post(
+        "/api/data-science/sessions/upload",
+        json={"name": "people.csv", "content": csv, "format": "csv"},
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["dataset"]["n_rows"] == 3
+    assert body["dataset"]["n_cols"] == 3
+    assert body["dataset"]["source"] == "upload"
+
+
+def test_upload_tsv_supported(client_as_a):
+    tsv = "a\tb\n1\t2\n3\t4\n"
+    resp = client_as_a.post(
+        "/api/data-science/sessions/upload",
+        json={"name": "t.tsv", "content": tsv, "format": "tsv"},
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["dataset"]["n_cols"] == 2
+
+
+def test_upload_autodetects_semicolon_delimiter(client_as_a):
+    # The python parser sniffs the delimiter when none is given.
+    weird = "a;b;c\n1;2;3\n4;5;6\n"
+    resp = client_as_a.post(
+        "/api/data-science/sessions/upload",
+        json={"name": "semi.csv", "content": weird, "format": "csv"},
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["dataset"]["n_cols"] == 3
+
+
+def test_upload_wrong_delimiter_in_header_is_rejected(client_as_a):
+    # Header kept its separators because the parser couldn't split -> flag it.
+    bad = "a|b|c\nx|y|z\n"
+    resp = client_as_a.post(
+        "/api/data-science/sessions/upload",
+        json={"name": "pipe.csv", "content": bad, "format": "csv", "delimiter": ","},
+    )
+    assert resp.status_code == 400
+    assert "delimiter" in resp.json()["error"]["message"].lower()
+
+
+def test_upload_legit_single_column_is_accepted(client_as_a):
+    single = "value\nalpha\nbravo\ncharlie\n"
+    resp = client_as_a.post(
+        "/api/data-science/sessions/upload",
+        json={"name": "list.csv", "content": single, "format": "csv"},
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["dataset"]["n_cols"] == 1
+
+
+def test_upload_header_only_rejected(client_as_a):
+    resp = client_as_a.post(
+        "/api/data-science/sessions/upload",
+        json={"name": "empty.csv", "content": "a,b,c\n", "format": "csv"},
+    )
+    assert resp.status_code == 400
+
+
 def test_profile_quality_flow(client_as_a, demo_session):
     prof = client_as_a.post(f"/api/data-science/sessions/{demo_session}/profile")
     assert prof.status_code == 200

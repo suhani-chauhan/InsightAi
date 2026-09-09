@@ -18,6 +18,7 @@ from app.api.v1.schemas.data_science import (
     PredictRequest,
     SessionCreatedResponse,
     TrainRequest,
+    UploadDatasetRequest,
 )
 from app.db.models.llm import LlmExecutionContext
 from app.services import data_science_service as svc
@@ -43,6 +44,17 @@ def create_session(request: CreateSessionRequest, current_user: CurrentUserDep):
         name=request.name,
         source=request.source,
         source_detail=request.source_detail,
+    )
+
+
+@router.post("/sessions/upload", response_model=SessionCreatedResponse)
+def upload_dataset(request: UploadDatasetRequest, current_user: CurrentUserDep):
+    return svc.create_session_from_text(
+        current_user.id,
+        name=request.name,
+        content=request.content,
+        fmt=request.format,
+        delimiter=request.delimiter,
     )
 
 

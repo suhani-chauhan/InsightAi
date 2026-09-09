@@ -40,6 +40,17 @@ export function createDemoSession() {
   return jsonRequest<SessionCreatedResponse>(`${BASE}/sessions/demo`, 'POST');
 }
 
+export interface UploadDatasetInput {
+  name: string;
+  content: string;
+  format?: 'csv' | 'tsv';
+  delimiter?: string;
+}
+
+export function uploadDataset(input: UploadDatasetInput) {
+  return jsonRequest<SessionCreatedResponse>(`${BASE}/sessions/upload`, 'POST', input);
+}
+
 export function getSession(sessionId: string) {
   return request<DatasetOverview>(`${BASE}/sessions/${sessionId}`);
 }

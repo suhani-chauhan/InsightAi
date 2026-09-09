@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { FlaskConical, Sparkles } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { FlaskConical, Sparkles, Upload } from 'lucide-react';
 import { MainShell } from '../components/common/MainShell';
 import { T } from '../components/dashboard/tokens';
 import { StepNav } from '../components/insight-studio/StepNav';
@@ -23,6 +23,7 @@ export function InsightStudioPage() {
     error,
     createFromPending,
     startDemo,
+    uploadFile,
     refreshOverview,
     reset,
   } = useInsightStudioStore();
@@ -123,7 +124,7 @@ export function InsightStudioPage() {
           )}
 
           {!sessionId ? (
-            <Landing loading={loading} onDemo={startDemo} />
+            <Landing loading={loading} onDemo={startDemo} onUpload={uploadFile} />
           ) : !dataset ? (
             <div style={{ padding: 60, textAlign: 'center', color: T.text3, fontFamily: T.fontMono }}>
               Loading analysis session…
@@ -153,7 +154,17 @@ export function InsightStudioPage() {
   );
 }
 
-function Landing({ loading, onDemo }: { loading: boolean; onDemo: () => void }) {
+function Landing({
+  loading,
+  onDemo,
+  onUpload,
+}: {
+  loading: boolean;
+  onDemo: () => void;
+  onUpload: (file: File) => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+
   return (
     <div style={{ maxWidth: 620, margin: '80px auto 0', textAlign: 'center' }}>
       <div
@@ -176,11 +187,33 @@ function Landing({ loading, onDemo }: { loading: boolean; onDemo: () => void }) 
       </h2>
       <p style={{ color: T.text3, lineHeight: 1.8, fontSize: '0.88rem', marginBottom: 28 }}>
         Run a query in Chat, then choose <strong>Analyze Dataset</strong> on the result to profile it, fix data-quality
-        issues, explore it, and train real models — without leaving InsightMind. Or start with the demo dataset below.
+        issues, explore it, and train real models — without leaving InsightMind. Or upload a CSV, or start with the demo
+        dataset.
       </p>
-      <Btn onClick={onDemo} disabled={loading}>
-        {loading ? 'Loading demo…' : 'Start with the demo dataset'}
-      </Btn>
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".csv,.tsv,text/csv,text/tab-separated-values"
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onUpload(file);
+            e.target.value = '';
+          }}
+        />
+        <Btn onClick={() => fileRef.current?.click()} disabled={loading}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Upload size={12} /> Upload a CSV
+          </span>
+        </Btn>
+        <Btn variant="ghost" onClick={onDemo} disabled={loading}>
+          {loading ? 'Loading…' : 'Use the demo dataset'}
+        </Btn>
+      </div>
+      <p style={{ color: T.text3, fontSize: '0.72rem', marginTop: 14, fontFamily: T.fontMono }}>
+        CSV or TSV up to 12 MB · {'≤'} 100k rows · nothing is stored server-side
+      </p>
     </div>
   );
 }

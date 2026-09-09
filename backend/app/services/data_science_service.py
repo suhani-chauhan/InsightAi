@@ -9,6 +9,7 @@ is acceptable for the synchronous, single-analyst workflow this ships with.
 
 from __future__ import annotations
 
+import io
 import threading
 import time
 import uuid
@@ -124,6 +125,69 @@ def create_session_from_records(
 
     dataset = Dataset.from_records(
         columns, rows, name=name or "Query result", source=source, source_detail=source_detail or {}
+    )
+    return _register(user_id, dataset)
+
+
+def create_session_from_text(
+    user_id: str,
+    *,
+    name: str,
+    content: str,
+    fmt: str = "csv",
+    delimiter: str | None = None,
+) -> dict[str, Any]:
+    """Parse an uploaded delimited-text file into an analysis session."""
+    # Deterministic delimiter choice — csv.Sniffer misfires badly on 1-column data.
+    if delimiter:
+        candidates = [delimiter]
+    elif fmt == "tsv":
+        candidates = ["\t"]
+    else:
+        first_line = content.splitlines()[0] if content.strip() else ""
+        candidates = [","]
+        for alt in (";", "\t", "|"):
+            if alt in first_line and "," not in first_line:
+                candidates = [alt]
+                break
+
+    df = None
+    parse_error: Exception | None = None
+    for sep in candidates:
+        try:
+            parsed = pd.read_csv(io.StringIO(content), sep=sep, skip_blank_lines=True)
+        except Exception as exc:  # noqa: BLE001
+            parse_error = exc
+            continue
+        df = parsed
+        break
+    if df is None:
+        raise BadRequestError(
+            f"Could not parse the file as {fmt.upper()}: {parse_error}" if parse_error else "Could not parse the file."
+        )
+
+    df = df.dropna(axis=1, how="all")
+    df.columns = [str(c).strip() for c in df.columns]
+    if df.shape[1] == 0:
+        raise BadRequestError("The file has no readable columns.")
+    if df.shape[1] == 1 and any(ch in str(df.columns[0]) for ch in (";", "\t", "|", ",")):
+        raise BadRequestError(
+            "Only one column was detected but the header still contains a separator — check the file's "
+            "delimiter (comma vs. semicolon vs. tab)."
+        )
+    if len(df) == 0:
+        raise BadRequestError("The file has a header but no data rows.")
+    if len(df) > _MAX_INBOUND_ROWS:
+        raise BadRequestError(
+            f"The file has {len(df):,} rows. Trim it to {_MAX_INBOUND_ROWS:,} rows or fewer before uploading."
+        )
+
+    dataset = Dataset.from_records(
+        df.columns.tolist(),
+        df.to_dict("records"),
+        name=name.strip() or "Uploaded dataset",
+        source="upload",
+        source_detail={"format": fmt, "original_columns": df.shape[1]},
     )
     return _register(user_id, dataset)
 
@@ -393,6 +457,7 @@ def _trim_eda(eda_data: dict[str, Any] | None) -> dict[str, Any] | None:
 
 __all__ = [
     "create_session_from_records",
+    "create_session_from_text",
     "create_demo_session",
     "list_sessions",
     "get_overview",

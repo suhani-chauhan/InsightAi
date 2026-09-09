@@ -20,6 +20,19 @@ class CreateSessionRequest(BaseModel):
     source_detail: dict[str, Any] = Field(default_factory=dict)
 
 
+class UploadDatasetRequest(BaseModel):
+    """A delimited-text file uploaded as UTF-8 text (client reads it with FileReader).
+
+    Kept as a JSON text payload rather than multipart so the feature adds no new
+    backend dependency. ~12 MB of text is the hard ceiling.
+    """
+
+    name: str = Field(min_length=1, max_length=200)
+    content: str = Field(min_length=1, max_length=12_000_000)
+    format: Literal["csv", "tsv"] = "csv"
+    delimiter: Optional[str] = Field(default=None, max_length=4)
+
+
 class CleaningOperation(BaseModel):
     op: str
     params: dict[str, Any] = Field(default_factory=dict)
@@ -65,6 +78,7 @@ class SessionCreatedResponse(BaseModel):
 
 __all__ = [
     "CreateSessionRequest",
+    "UploadDatasetRequest",
     "CleaningOperation",
     "CleaningOperationsRequest",
     "EdaRequest",

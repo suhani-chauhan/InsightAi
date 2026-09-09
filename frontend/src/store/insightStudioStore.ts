@@ -23,6 +23,7 @@ interface InsightStudioState {
   clearPending: () => void;
   createFromPending: () => Promise<string | null>;
   startDemo: () => Promise<string | null>;
+  uploadFile: (file: File) => Promise<string | null>;
   loadSession: (sessionId: string) => Promise<void>;
   refreshOverview: () => Promise<void>;
   reset: () => void;
@@ -93,6 +94,32 @@ export const useInsightStudioStore = create<InsightStudioState>((set, get) => ({
       return res.session_id;
     } catch (err) {
       set({ loading: false, error: message(err, 'Failed to start the demo dataset') });
+      return null;
+    }
+  },
+
+  uploadFile: async (file) => {
+    const lower = file.name.toLowerCase();
+    if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
+      set({ error: 'Excel files are not supported yet — export the sheet as CSV and upload that.' });
+      return null;
+    }
+    if (file.size > 12_000_000) {
+      set({ error: 'File is larger than 12 MB. Trim it or sample it first.' });
+      return null;
+    }
+    set({ loading: true, error: null });
+    try {
+      const content = await file.text();
+      const res = await api.uploadDataset({
+        name: file.name.replace(/\.[^.]+$/, ''),
+        content,
+        format: lower.endsWith('.tsv') ? 'tsv' : 'csv',
+      });
+      set({ sessionId: res.session_id, dataset: res.dataset, pending: null, loading: false });
+      return res.session_id;
+    } catch (err) {
+      set({ loading: false, error: message(err, 'Failed to read that file') });
       return null;
     }
   },
