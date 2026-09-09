@@ -1,0 +1,33 @@
+# Normalize line endings so Windows checkouts don't churn the whole tree.
+* text=auto eol=lf
+
+# Explicitly text
+*.py    text eol=lf
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.js    text eol=lf
+*.jsx   text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.sh    text eol=lf
+*.cfg   text eol=lf
+*.ini   text eol=lf
+*.toml  text eol=lf
+Dockerfile text eol=lf
+.env.example text eol=lf
+
+# Binary — never touch
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.joblib binary
+*.xlsx  binary
+*.woff  binary
+*.woff2 binary

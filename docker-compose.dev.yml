@@ -1,0 +1,113 @@
+# InsightMind AI — zero-setup local stack.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#
+# Adds a local throwaway Postgres and swaps in backend/.env.dev, which enables
+# BACKEND_DEV_MODE mock auth (no Supabase account, no Gemini key required).
+# Every request is the dev user; the Data Science engine, dashboards, query
+# library and connections all work. AI chat / Ask InsightMind narration need a
+# Gemini key in backend/.env.dev.
+#
+#   Frontend: http://localhost:5173   API: http://localhost:8000
+
+x-dev-backend-env: &dev-backend-env
+  # Explicit overrides so mock auth is guaranteed regardless of how Compose
+  # merges env_file across the two files.
+  APP_ENV: development
+  BACKEND_DEV_MODE: "true"
+  SUPABASE_URL: ""
+  SUPABASE_ANON_KEY: ""
+  SUPABASE_JWT_SECRET: ""
+  APP_DATABASE_URL: postgresql+psycopg2://insightmind:insightmind@db:5432/insightmind
+  DATABASE_URL: postgresql://insightmind:insightmind@db:5432/insightmind
+  REDIS_URL: redis://redis:6379/0
+  CELERY_BROKER_URL: redis://redis:6379/0
+  AUTH_COOKIE_SECURE: "false"
+
+x-dev-db-depends: &dev-db-depends
+  redis:
+    condition: service_healthy
+  db:
+    condition: service_healthy
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: insightmind
+      POSTGRES_PASSWORD: insightmind
+      POSTGRES_DB: insightmind
+    ports:
+      - "127.0.0.1:5433:5432"   # 5433 on the host to avoid clashing with a local Postgres
+    volumes:
+      - insightmind_dev_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U insightmind"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    env_file: ./backend/.env.dev
+    environment: *dev-backend-env
+    depends_on: *dev-db-depends
+
+  worker:
+    env_file: ./backend/.env.dev
+    environment:
+      <<: *dev-backend-env
+      CELERY_SEMANTICS_QUEUE: semantics
+      CELERY_SUGGESTIONS_QUEUE: suggestions
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
+  agent-worker:
+    env_file: ./backend/.env.dev
+    environment:
+      <<: *dev-backend-env
+      CELERY_INTERACTIVE_QUEUE: interactive
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
+  dashboard-worker:
+    env_file: ./backend/.env.dev
+    environment:
+      <<: *dev-backend-env
+      CELERY_DASHBOARDS_QUEUE: dashboards
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
+  beat:
+    env_file: ./backend/.env.dev
+    environment: *dev-backend-env
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+
+volumes:
+  insightmind_dev_db:

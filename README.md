@@ -263,6 +263,16 @@ These are the parts I'm most proud of as an engineer:
 
 ## 🚀 Local Setup
 
+### ⚡ Zero-setup dev stack (no accounts needed)
+
+Just want to try it? This runs the entire stack against a throwaway local Postgres with **mock auth** — no Supabase project, no LLM key:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+Open **http://localhost:5173** — you're logged in as the dev user immediately. Everything deterministic works: the full **Insight Studio** workflow (profiling, quality, cleaning, EDA, AutoML, reports), dashboards, connections, and the query library. AI chat and *Ask InsightMind* narration light up if you add a `GEMINI_API_KEY` to `backend/.env.dev`. See [`DATA_SCIENCE.md`](DATA_SCIENCE.md) for the Data Science workflow.
+
 ### 🐳 Quick start with Docker (recommended)
 
 The whole stack — API, Celery worker, beat scheduler, Redis, and the frontend — runs with one command. You only need Docker installed, plus two free accounts you bring yourself:
@@ -271,8 +281,8 @@ The whole stack — API, Celery worker, beat scheduler, Redis, and the frontend 
 - A **Google Gemini API key** (or Groq) — [aistudio.google.com](https://aistudio.google.com), free tier
 
 ```bash
-git clone https://github.com/danishali778/query-mind.git
-cd query-mind
+git clone https://github.com/suhani-chauhan/InsightAi.git
+cd InsightAi
 
 # Fill in your Supabase + LLM keys in both files:
 copy backend\.env.example backend\.env      # cp on macOS/Linux
@@ -298,8 +308,8 @@ The backend applies database migrations automatically on startup. Open **http://
 ### 1. Clone
 
 ```bash
-git clone https://github.com/danishali778/query-mind.git
-cd query-mind
+git clone https://github.com/suhani-chauhan/InsightAi.git
+cd InsightAi
 ```
 
 ### 2. Backend
