@@ -430,6 +430,44 @@ def ml_train(
     return payload
 
 
+def export_model(user_id: str, session_id: str) -> tuple[bytes, str]:
+    """Serialise the trained pipeline + metadata as a single joblib artifact.
+
+    We only ever *write* artifacts here; the app never loads a user-supplied
+    model file (master spec §37).
+    """
+    import joblib
+
+    session = _store.get(session_id, user_id)
+    bundle = session.model_bundle
+    if bundle is None:
+        raise BadRequestError("Train a model before exporting it.")
+
+    artifact = {
+        "insightmind_artifact_version": 1,
+        "pipeline": bundle.pipeline,
+        "metadata": {
+            "task": bundle.task,
+            "target": bundle.target,
+            "best_model": bundle.best_model_name,
+            "primary_metric": bundle.primary_metric,
+            "metrics": {k: v for k, v in bundle.metrics.items() if not isinstance(v, list)},
+            "feature_columns": bundle.feature_columns,
+            "feature_schema": bundle.feature_schema,
+            "label_classes": bundle.label_classes,
+            "n_train": bundle.n_train,
+            "n_test": bundle.n_test,
+            "dataset_name": session.dataset.name,
+            "trained_at": time.time(),
+        },
+    }
+    buffer = io.BytesIO()
+    joblib.dump(artifact, buffer)
+    safe_name = re.sub(r"[^A-Za-z0-9_-]+", "_", session.dataset.name).strip("_") or "dataset"
+    filename = f"insightmind_{safe_name}_{bundle.best_model_name.replace(' ', '')}.joblib"
+    return buffer.getvalue(), filename
+
+
 def ml_predict(user_id: str, session_id: str, feature_values: dict[str, Any]) -> dict[str, Any]:
     session = _store.get(session_id, user_id)
     if session.model_bundle is None:
@@ -536,6 +574,7 @@ __all__ = [
     "ml_detect",
     "ml_train",
     "ml_predict",
+    "export_model",
     "report",
     "ask",
 ]

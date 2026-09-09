@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { T } from '../dashboard/tokens';
 import { Btn, ErrorBlock, LoadingBlock, Panel, Pill, num } from './ui';
-import { detectTask, predict, trainModels } from '../../services/dataScience';
+import { detectTask, downloadModel, predict, trainModels } from '../../services/dataScience';
 import type {
   DatasetOverview,
   PredictionResult,
@@ -157,7 +157,10 @@ export function MlStep({
 
       {result && (
         <>
-          <Panel title="Best model">
+          <Panel
+            title="Best model"
+            actions={<DownloadModelButton sessionId={sessionId} />}
+          >
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
               <div>
                 <div style={{ fontFamily: T.fontHead, fontStyle: 'italic', fontWeight: 900, fontSize: '1.8rem', color: T.text }}>
@@ -261,6 +264,34 @@ export function MlStep({
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function DownloadModelButton({ sessionId }: { sessionId: string }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+      <Btn
+        small
+        variant="ghost"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          setError(null);
+          try {
+            await downloadModel(sessionId);
+          } catch (err) {
+            setError(err instanceof Error ? err.message : 'Download failed');
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        {busy ? 'Preparing…' : 'Download model (.joblib)'}
+      </Btn>
+      {error && <span style={{ color: T.red, fontSize: '0.68rem' }}>{error}</span>}
     </div>
   );
 }

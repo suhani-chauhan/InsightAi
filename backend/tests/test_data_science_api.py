@@ -250,6 +250,34 @@ def test_eda_and_ml_end_to_end(client_as_a, demo_session):
     assert {s["id"] for s in report.json()["sections"]} >= {"overview", "quality", "ml"}
 
 
+def test_download_model_returns_loadable_joblib(client_as_a, demo_session):
+    import io
+
+    import joblib
+    from sklearn.pipeline import Pipeline
+
+    train = client_as_a.post(
+        f"/api/data-science/sessions/{demo_session}/ml/train",
+        json={"target": "Attrition", "cross_validation": False},
+    )
+    assert train.status_code == 200, train.text
+
+    resp = client_as_a.get(f"/api/data-science/sessions/{demo_session}/ml/model")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"] == "application/octet-stream"
+    assert ".joblib" in resp.headers["content-disposition"]
+
+    artifact = joblib.load(io.BytesIO(resp.content))
+    assert isinstance(artifact["pipeline"], Pipeline)
+    assert artifact["metadata"]["target"] == "Attrition"
+    assert artifact["metadata"]["feature_columns"]
+
+
+def test_download_model_requires_training(client_as_a, demo_session):
+    resp = client_as_a.get(f"/api/data-science/sessions/{demo_session}/ml/model")
+    assert resp.status_code == 400
+
+
 def test_predict_requires_trained_model(client_as_a, demo_session):
     resp = client_as_a.post(
         f"/api/data-science/sessions/{demo_session}/ml/predict", json={"feature_values": {}}

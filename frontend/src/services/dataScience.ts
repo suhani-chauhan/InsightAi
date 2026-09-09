@@ -1,4 +1,5 @@
 // InsightMind AI — Data Science workspace API client.
+import { API_BASE } from '../config';
 import { jsonRequest, request } from './http';
 import type {
   AskResult,
@@ -137,6 +138,35 @@ export function predict(sessionId: string, featureValues: Record<string, unknown
 
 export function generateReport(sessionId: string) {
   return jsonRequest<DsReport>(`${BASE}/sessions/${sessionId}/report`, 'POST');
+}
+
+/** Fetches the trained pipeline as a .joblib file and triggers a browser download. */
+export async function downloadModel(sessionId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}${BASE}/sessions/${sessionId}/ml/model`, {
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    let detail = `Download failed (${res.status})`;
+    try {
+      const body = await res.json();
+      detail = body?.error?.message || body?.detail || detail;
+    } catch {
+      /* non-JSON error body */
+    }
+    throw new Error(detail);
+  }
+  const blob = await res.blob();
+  const disposition = res.headers.get('Content-Disposition') || '';
+  const match = disposition.match(/filename="?([^"]+)"?/);
+  const filename = match?.[1] || `insightmind-model-${sessionId.slice(0, 8)}.joblib`;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 export function askInsightMind(sessionId: string, question: string) {

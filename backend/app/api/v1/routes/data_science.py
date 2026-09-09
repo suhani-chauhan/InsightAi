@@ -6,7 +6,7 @@ in-memory analysis copy and never mutate a connected database.
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 
 from app.api.deps import CurrentUserDep
 from app.api.v1.schemas.data_science import (
@@ -146,6 +146,16 @@ def train_models(session_id: str, request: TrainRequest, current_user: CurrentUs
 @router.post("/sessions/{session_id}/ml/predict")
 def predict(session_id: str, request: PredictRequest, current_user: CurrentUserDep):
     return svc.ml_predict(current_user.id, session_id, request.feature_values)
+
+
+@router.get("/sessions/{session_id}/ml/model")
+def download_model(session_id: str, current_user: CurrentUserDep):
+    data, filename = svc.export_model(current_user.id, session_id)
+    return Response(
+        content=data,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.post("/sessions/{session_id}/report")
