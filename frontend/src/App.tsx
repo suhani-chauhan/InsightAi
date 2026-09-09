@@ -8,6 +8,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { LibraryPage } from './pages/LibraryPage';
 import { ConnectionsPage } from './pages/ConnectionsPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
+import { InsightStudioPage } from './pages/InsightStudioPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AuthPage } from './pages/AuthPage';
 import { UpgradePage } from './pages/UpgradePage';
@@ -44,6 +45,7 @@ function App() {
           <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+          <Route path="/insight-studio" element={<ProtectedRoute><InsightStudioPage /></ProtectedRoute>} />
           <Route path="/library" element={<ProtectedRoute><LibraryPage /></ProtectedRoute>} />
           <Route path="/connections" element={<ProtectedRoute><ConnectionsPage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />

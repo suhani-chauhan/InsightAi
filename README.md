@@ -1,6 +1,10 @@
-# query-mind
+# InsightMind AI
 
-**Ask your database questions in plain English. Get SQL, results, charts, and dashboards back in seconds.**
+**AI-Powered Data Intelligence, Smart Data Cleaning, Exploratory Analysis & AutoML.**
+
+Ask your database questions in plain English and get SQL, results, charts, and dashboards back in seconds — then send any result into a full **Data Science workspace** for profiling, quality analysis, smart cleaning, EDA, and real machine-learning models.
+
+> InsightMind AI evolved from **QueryMind**, an AI-powered database-analytics platform. QueryMind's entire feature set — the LangGraph database agent, NL→SQL, dashboards, query library, scheduling — is intact. Everything under **Insight Studio** below is the new Data Intelligence layer built on top of it.
 
 <p align="left">
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
@@ -28,11 +32,17 @@
 
 ---
 
-## 💡 What is query-mind?
+## 💡 What is InsightMind AI?
 
-query-mind is a **full-stack, AI-powered business intelligence platform**. You connect a real database, type a question like *"How many support tickets are there per category, broken down by priority?"*, and a **tool-calling AI agent** explores your schema, writes the SQL, validates it, runs it safely (read-only), and hands back the answer with an explanation, a results table, and an automatically chosen chart.
+InsightMind AI is a **full-stack AI Data Intelligence platform** that connects databases and query results to intelligent data profiling, automated data cleaning, exploratory analysis, machine learning, predictive insights, dashboards, and natural-language analytics.
 
-It is not a thin wrapper around a chat API. Under the hood there is a **LangGraph agent loop** with 12 database tools, budget enforcement, context compaction, error-recovery ladders, and a deterministic fallback pipeline — all built to survive the messy reality of real schemas and imperfect model output.
+**The BI half (from QueryMind):** connect a real database, type a question like *"How many support tickets are there per category, broken down by priority?"*, and a **tool-calling LangGraph agent** explores your schema, writes the SQL, validates it, runs it safely (read-only), and hands back the answer with an explanation, a results table, and an automatically chosen chart. Under the hood: a 12-tool agent loop with budget enforcement, context compaction, error-recovery ladders, and a deterministic fallback pipeline.
+
+**The Data Science half (Insight Studio):** click **Analyze Dataset** on any query result and step through a guided workflow — **Dataset → Quality → Clean → Explore → ML → Report**. It profiles the data, scores its quality, recommends (never blindly applies) cleaning operations with a before/after preview and undo history, runs EDA with grounded insights, and trains and compares real scikit-learn models with leakage-safe preprocessing, feature importance, and a live prediction form.
+
+### The AI principle
+
+The LLM is an **orchestrator and explanation layer only**. Every number you see — statistics, quality scores, cleaning impact, model metrics, feature importance — is computed deterministically in Python (pandas / numpy / scikit-learn). The LLM is given those computed results and asked to explain them; it never calculates analytics and never invents figures.
 
 ### The problem it solves
 
@@ -44,7 +54,7 @@ Getting an answer out of a database normally requires you to:
 4. Interpret raw rows into something a human can act on
 5. Rebuild the same reports over and over
 
-query-mind collapses all five steps into a single conversation, while keeping everything **auditable** — every agent step (schema search, table inspection, validation, execution) is traceable in the UI via "Show Agent Steps."
+InsightMind AI collapses all five steps into a single conversation, while keeping everything **auditable** — every agent step (schema search, table inspection, validation, execution) is traceable in the UI via "Show Agent Steps." From there, one click sends the result into Insight Studio for cleaning, EDA, and modelling.
 
 ---
 
@@ -104,12 +114,38 @@ Connect PostgreSQL databases (including cloud-hosted, e.g. Supabase poolers) thr
 
 ---
 
+## 🧪 Insight Studio — the Data Science workspace
+
+Take any query result (or the built-in demo dataset) into a guided, multi-step Data Science workflow. Nothing here touches your source database — the workspace operates on a bounded in-memory **analysis copy**.
+
+**Workflow:** `Dataset → Quality → Clean → Explore → ML → Report`, with an **Ask InsightMind** panel available at every step.
+
+| Step | What it does |
+|------|--------------|
+| **Dataset** | Row/column counts, inferred column kinds (numeric / categorical / datetime / boolean / text), per-column stats (missing %, unique, mean/median/mode, quantiles, IQR, outliers, skew, histogram), sample rows |
+| **Quality** | 7 issue detectors — missing values, duplicates, numeric/date-as-string, categorical inconsistency (`India`/`india`/`INDIA`), outliers (IQR + modified z-score), constant / near-zero-variance columns, potential target leakage. Explainable **0–100 quality score** with a per-dimension breakdown |
+| **Clean** | An AI recommendation engine turns each issue into a concrete operation with **problem / solution / reason / expected impact**. *Recommendation mode* (approve each) or *Smart Clean* (apply high-confidence, low-risk fixes). Dry-run **preview** with before/after and a column-level diff. Exact **undo / reset** history. 11 operations: trim whitespace, standardize categories, to-numeric, to-datetime, drop duplicates, drop column, drop rows, impute (mean/median/mode/constant/KNN, auto-selected by distribution), handle outliers (keep/remove/cap/flag), group rare categories, map categories |
+| **Explore** | Numeric & categorical summaries, correlation matrix + heatmap, 7 chart types (histogram, box, bar, pie, scatter, line, correlation heatmap), and **auto-insights grounded in the computed statistics** — skew, imbalance, correlation, group differences. Uses "associated with", never "causes" |
+| **ML** | Auto-detects classification vs regression (user can override). Trains **5 classifiers / 6 regressors** inside an sklearn `Pipeline` + `ColumnTransformer` fitted **only on the training split** — no leakage. Stratified split, 5-fold cross-validation, model comparison ranked by the task-appropriate metric, confusion matrix / ROC-AUC / R² / RMSE, native or permutation **feature importance** (one-hot columns collapsed to their source feature), and a dynamic **prediction form** that runs inputs back through the exact fitted pipeline |
+| **Report** | Assembles dataset overview, quality summary, cleaning operations, before/after, EDA findings, ML comparison, best model, feature importance, and recommendations — exportable as standalone HTML |
+
+**Ask InsightMind** answers natural-language questions ("What should I clean first?", "Which model performed best and why?") grounded strictly in the session's computed artifacts. If the LLM is unavailable the panel degrades gracefully — the computed analysis on the page stays accurate.
+
+A safe, clearly-labelled **demo dataset** (employee attrition, seeded with missing values, duplicates, inconsistent categories, and salary outliers) lets you try the whole workflow without connecting a database.
+
+---
+
 ## ✨ Feature Overview
 
 | Area | What you get |
 |------|--------------|
 | **AI Agent** | Tool-calling LangGraph agent with 12 tools: schema search, table inspection, relationship discovery, data profiling, row counting, SQL validation, live preview queries, and more |
-| **Safety** | Read-only enforcement, write-intent refusal, query timeouts, row-limit wrapping, live-query caps, credential encryption (Fernet) |
+| **Data profiling** | Deterministic pandas/numpy profiling — dataset- and column-level stats, type inference, constant/near-constant/high-cardinality detection |
+| **Data quality** | 7 issue detectors + an explainable 0–100 quality score with per-dimension breakdown; every figure computed, not estimated |
+| **Smart cleaning** | AI recommendations with reasons, dry-run preview with before/after + column diff, Smart-Clean auto-apply for low-risk fixes, exact undo/reset history; source database never modified |
+| **EDA** | Numeric/categorical summaries, correlations, 7 chart types, auto-insights grounded in computed statistics |
+| **AutoML** | Real scikit-learn training (5 classifiers / 6 regressors), leakage-safe `Pipeline`+`ColumnTransformer`, stratified split, 5-fold CV, model comparison, feature importance, live prediction form |
+| **Safety** | Read-only enforcement, write-intent refusal, query timeouts, row-limit wrapping, live-query caps, credential encryption (Fernet); Data Science runs on bounded analysis copies scoped to the owner |
 | **Resilience** | Call/time budgets with salvage finish, mechanical no-LLM fallback, context compaction for long agent runs, difflib-powered error suggestions, repeat-tool-call detection ladder |
 | **Chat UX** | Explanations with every query, expandable agent trace, editable SQL with re-run, pinned results, session history per connection |
 | **Visualization** | Auto-selected chart types, dual-axis support, grouped/single/multi-grid modes, interactive tooltips, CSV export |
@@ -133,14 +169,21 @@ flowchart LR
     SVC --> QE[Query Engine]
     SVC --> REPO[Repositories]
     SVC --> WORKERS[Celery Workers]
+    SVC --> DS[Data Science Engine]
 
+    DS --> PANDAS[pandas / numpy / scikit-learn]
+    DS --> LLMX[LLM: explanation layer only]
     AGENT --> LLM[Gemini / Groq via LangChain]
     PIPE --> LLM
+    LLMX --> LLM
     AGENT --> QE
     QE --> EXTDB[(Connected PostgreSQL DBs)]
+    QE -. query result .-> DS
     REPO --> SB[(Supabase / App DB)]
     WORKERS --> SVC
 ```
+
+The Data Science engine is fully deterministic: `pandas` / `numpy` / `scikit-learn` compute every statistic, cleaning transform, quality score, and model metric. The LLM only receives those computed results and explains them.
 
 ### How a chat request flows
 
@@ -157,11 +200,30 @@ backend/app/
   api/            # FastAPI routes, request/response schemas, auth deps
   core/           # config, secrets, logging, CORS, error handling
   db/             # ORM models, repositories, session management
-  services/       # chat, connections, library, dashboards, billing, auth
+  services/       # chat, connections, library, dashboards, billing, auth,
+                  #   data_science_service (in-memory analysis sessions)
   agents/         # db_agent (tool-calling loop), nl_to_sql, visualization
+  data_science/   # profiling, quality, cleaning, eda, ml, report, demo_data,
+                  #   insights_llm — deterministic pandas/numpy/sklearn engine
   integrations/   # LLM client (Gemini/Groq), Supabase
   query_engine/   # execution, schema inspection, safety wrapping
   workers/        # Celery app, beat scheduler, background jobs
+```
+
+### Data Science API
+
+All routes are owner-scoped and operate on an in-memory analysis copy:
+
+```text
+POST /api/data-science/sessions            # from a query result {columns, rows}
+POST /api/data-science/sessions/demo       # built-in demo dataset
+POST /api/data-science/sessions/{id}/profile
+POST /api/data-science/sessions/{id}/quality
+POST /api/data-science/sessions/{id}/cleaning/recommendations | preview | apply | undo | reset
+POST /api/data-science/sessions/{id}/eda
+POST /api/data-science/sessions/{id}/ml/detect-task | train | predict
+POST /api/data-science/sessions/{id}/report
+POST /api/data-science/sessions/{id}/ask
 ```
 
 ---
@@ -173,10 +235,11 @@ backend/app/
 | **Frontend** | React 19, TypeScript, Vite, React Router, Zustand, Recharts, react-grid-layout, Lucide |
 | **Backend** | Python 3.11, FastAPI, Pydantic v2, Uvicorn |
 | **AI / Agents** | LangGraph, LangChain, Google Gemini (primary), Groq (switchable via `LLM_PROVIDER`) |
+| **Data Science** | pandas, numpy, scikit-learn — all profiling, cleaning, EDA, and model training |
 | **Data & Auth** | Supabase (Postgres + JWT auth), SQLAlchemy, psycopg2 |
 | **Query Execution** | SQLAlchemy engines per connection, SSH tunneling, schema introspection |
 | **Background Jobs** | Celery, Redis, Celery Beat |
-| **Testing** | Pytest — 200+ backend tests covering agent budgets, compaction, tools, safety, repositories, and provider switching |
+| **Testing** | Pytest — 460+ backend tests covering agent budgets, compaction, tools, safety, repositories, provider switching, and the full Data Science engine + API |
 
 ---
 
@@ -310,18 +373,22 @@ VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```bash
 cd backend
 python -m pytest
+
+# Data Science engine + API only
+python -m pytest tests/test_data_science_*.py
 ```
 
-The suite covers the agent loop, tool behavior, budget/salvage paths, context compaction, LLM provider switching, SQL safety, schema commands, repositories with multi-user isolation, and API routes.
+The suite covers the agent loop, tool behavior, budget/salvage paths, context compaction, LLM provider switching, SQL safety, schema commands, repositories with multi-user isolation, and API routes. The Data Science suites (`test_data_science_profiling / quality / cleaning / ml / api`) verify computed statistics, deterministic quality scoring, cleaning operations and undo history, classification/regression detection, leakage-safe training, real model metrics, feature importance, and that analysis sessions never mutate a database and stay scoped to their owner.
 
 ---
 
 ## 🗺️ Roadmap
 
 - **Deeper analytical reasoning** — "Why is revenue dropping?" answered with multi-query investigations and narrative reports
-- **Real-time agent progress streaming** to the chat UI (currently a single blocking request)
+- **Pin Data Science metrics to dashboards** — quality score, best-model F1, top feature, EDA charts as first-class widgets
+- **Background Data Science jobs** — move large-dataset profiling, EDA, and model training onto the existing Celery workers with progress streaming
+- **CSV / Excel upload** as a dataset source alongside query results
 - **More database engines** — MySQL support is scaffolded; broader engine coverage planned
-- **Containerized deployment** — Docker Compose for API + workers + Redis
 - **Collaboration** — shared workspaces, dashboard permissions, and audit trails
 
 ---
@@ -329,4 +396,6 @@ The suite covers the agent loop, tool behavior, budget/salvage paths, context co
 ## 📄 Notes
 
 - `backend/app` is the canonical backend package; `backend/main.py` is a thin convenience wrapper.
+- Data Science analysis sessions are held **in memory** — bounded (8 per user, 3-hour TTL), owner-scoped, and never persisted or written back to a database. They do not survive a server restart and are not shared across worker processes; this fits the synchronous single-analyst workflow and keeps the source data untouched.
+- Adding the Data Science layer introduces three backend dependencies: `pandas`, `numpy`, `scikit-learn` (see `backend/requirements.txt`). No new environment variables are required — the LLM narration layer reuses the existing `LLM_PROVIDER` / provider-key configuration and degrades gracefully when unavailable.
 - All demo media lives in the [`demos/`](demos/) folder.

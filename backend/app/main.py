@@ -30,9 +30,12 @@ validate_jwt_configuration()
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="query-mind API",
-    description="Chat with your data - Text-to-SQL powered by AI",
-    version="2.0.0",
+    title="InsightMind AI API",
+    description=(
+        "AI-Powered Data Intelligence, Smart Data Cleaning, Exploratory Analysis & AutoML. "
+        "Evolved from QueryMind's text-to-SQL foundation."
+    ),
+    version="2.1.0",
     lifespan=lifespan,
 )
 

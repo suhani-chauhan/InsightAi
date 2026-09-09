@@ -7,6 +7,7 @@ from app.api.v1.routes import (
     connections,
     dashboard_generations,
     dashboards,
+    data_science,
     query,
     query_history,
     query_library,
@@ -30,6 +31,7 @@ api_router.include_router(question_suggestions.router)
 api_router.include_router(dashboards.router)
 api_router.include_router(dashboard_generations.router)
 api_router.include_router(analytics.router)
+api_router.include_router(data_science.router)
 api_router.include_router(settings.router)
 api_router.include_router(llm_settings.router)
 api_router.include_router(semantics.router)

@@ -1,13 +1,14 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { 
-  MessageSquare, 
-  LayoutDashboard, 
-  Library, 
-  BarChart3, 
-  Database, 
+import {
+  MessageSquare,
+  LayoutDashboard,
+  Library,
+  BarChart3,
+  Database,
   Settings,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  FlaskConical
 } from 'lucide-react';
 import { T } from '../dashboard/tokens';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -120,6 +121,9 @@ export function NavSection({ onDashboardHover, onNavigate }: { onDashboardHover?
       <NavItem icon={<Library size={16} />} label="Library" path="/library" active={p === '/library'} onNavigate={onNavigate} />
       <NavItem icon={<BarChart3 size={16} />} label="Analytics" path="/analytics" active={p === '/analytics'} onNavigate={onNavigate} />
 
+      <div style={{ ...sectionLabel, paddingTop: 32 }}>Data Science</div>
+      <NavItem icon={<FlaskConical size={16} />} label="Insight Studio" path="/insight-studio" active={p === '/insight-studio'} onNavigate={onNavigate} />
+
       <div style={{ ...sectionLabel, paddingTop: 32 }}>Infrastructure</div>
       <NavItem icon={<Database size={16} />} label="Connections" path="/connections" active={p === '/connections'} onNavigate={onNavigate} />
       <NavItem icon={<Settings size={16} />} label="Settings" path="/settings" active={p === '/settings'} onNavigate={onNavigate} />
@@ -161,15 +165,15 @@ export function AppSidebar({
           fontStyle: 'italic'
         }}>
           {/* Black Square Logo */}
-          <div style={{ 
-            width: 32, height: 32, 
+          <div style={{
+            width: 32, height: 32,
             background: T.text,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontSize: '1rem', fontWeight: 900, flexShrink: 0
+            color: '#fff', fontSize: '0.8rem', fontWeight: 900, flexShrink: 0, letterSpacing: '-0.03em'
           }}>
-            Q
+            IM
           </div>
-          query-mind
+          InsightMind AI
         </div>
 
         <NavSection onDashboardHover={onDashboardHover} onNavigate={onNavigate} />

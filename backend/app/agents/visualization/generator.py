@@ -9,7 +9,6 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from app.agents._llm_content import log_llm_output
 from app.agents._prompt_loader import load_prompt
-from app.agents.nl_to_sql.llm import get_llm
 from app.db.models.llm import LlmExecutionContext
 
 logger = logging.getLogger("query-mind.visualization")
@@ -55,6 +54,10 @@ def generate_visualization_blueprint(
         )
 
     human_message += "\n\nBased on this, generate the optimal chart visualization JSON blueprint."
+
+    # Imported lazily: eager import creates a circular dependency between the
+    # visualization and nl_to_sql agent packages depending on import order.
+    from app.agents.nl_to_sql.llm import get_llm
 
     response = get_llm(llm_context).invoke(
         [

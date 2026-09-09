@@ -6,7 +6,8 @@ import { BaseChartContainer } from '../charts/BaseChartContainer';
 import { AddToDashboardModal } from './AddToDashboardModal';
 import { SaveQueryModal } from './SaveQueryModal';
 import { useSmartSave } from '../../hooks/useSmartSave';
-import { Pin, Plus } from 'lucide-react';
+import { useInsightStudioStore } from '../../store/insightStudioStore';
+import { FlaskConical, Pin, Plus } from 'lucide-react';
 import type { ChatMessageView } from '../../types/chat';
 import { AgentActivity } from './AgentActivity';
 import { SafeMarkdownText } from './SafeMarkdownText';
@@ -33,6 +34,23 @@ export function MessageBubble({
   const [definitionsOpen, setDefinitionsOpen] = useState(false);
 
   const { smartAddToDashboard, smartSaveToLibrary, isSaving: isSmartSaving } = useSmartSave();
+  const setPendingDataset = useInsightStudioStore((s) => s.setPending);
+
+  const rowsForAnalysis = message.rows || [];
+  const columnsForAnalysis = message.columns || [];
+  const canAnalyze = rowsForAnalysis.length > 0 && columnsForAnalysis.length > 0;
+
+  const handleAnalyzeClick = () => {
+    if (!canAnalyze) return;
+    // Persist the handoff (store + sessionStorage) before the link navigates.
+    setPendingDataset({
+      columns: columnsForAnalysis,
+      rows: rowsForAnalysis,
+      name: message.chart_recommendation?.title || 'Query result',
+      source: 'query_result',
+      source_detail: { sql: message.sql ?? null, connection_id: connectionId ?? null },
+    });
+  };
 
   const handleSaved = (created: boolean) => {
     setSaveLabel(created ? 'Saved!' : 'Already saved');
@@ -315,6 +333,27 @@ export function MessageBubble({
                 </>
               )}
             </button>
+
+            {canAnalyze ? (
+              <a
+                href="/insight-studio"
+                onClick={handleAnalyzeClick}
+                style={{ ...actionBtnStyle(true), textDecoration: 'none' }}
+                title="Profile, clean, explore and model this result in Insight Studio"
+              >
+                <FlaskConical size={12} strokeWidth={3} />
+                ANALYZE DATASET
+              </a>
+            ) : (
+              <button
+                disabled
+                style={actionBtnStyle(false)}
+                title="Run a query that returns rows to analyze it"
+              >
+                <FlaskConical size={12} strokeWidth={3} />
+                ANALYZE DATASET
+              </button>
+            )}
 
             {onTogglePin && message.id && (
               <button
