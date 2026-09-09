@@ -137,10 +137,11 @@ def invoke_chat_llm(
     max_tokens: int = 4096,
 ) -> str:
     response = get_chat_llm(context, temperature=temperature, max_tokens=max_tokens).invoke(messages)
-    content = response.content
-    if isinstance(content, str):
-        return content.strip()
-    return str(content).strip()
+    # Gemini 3.x returns content as a list of blocks (text + thought signatures),
+    # not a plain string — normalise both shapes to text.
+    from app.agents._llm_content import content_to_text
+
+    return content_to_text(response.content).strip()
 
 
 __all__ = ["MeteredChatModel", "get_chat_llm", "get_chat_llm_with_tools", "invoke_chat_llm"]

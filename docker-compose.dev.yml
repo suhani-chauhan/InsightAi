@@ -53,12 +53,18 @@ services:
       retries: 10
 
   backend:
-    env_file: ./backend/.env.dev
+    env_file:
+      - ./backend/.env.dev
+      - path: ./backend/.env.dev.local   # gitignored; optional local overrides (e.g. GEMINI_API_KEY)
+        required: false
     environment: *dev-backend-env
     depends_on: *dev-db-depends
 
   worker:
-    env_file: ./backend/.env.dev
+    env_file:
+      - ./backend/.env.dev
+      - path: ./backend/.env.dev.local   # gitignored; optional local overrides (e.g. GEMINI_API_KEY)
+        required: false
     environment:
       <<: *dev-backend-env
       CELERY_SEMANTICS_QUEUE: semantics
@@ -72,7 +78,10 @@ services:
         condition: service_healthy
 
   agent-worker:
-    env_file: ./backend/.env.dev
+    env_file:
+      - ./backend/.env.dev
+      - path: ./backend/.env.dev.local   # gitignored; optional local overrides (e.g. GEMINI_API_KEY)
+        required: false
     environment:
       <<: *dev-backend-env
       CELERY_INTERACTIVE_QUEUE: interactive
@@ -85,7 +94,10 @@ services:
         condition: service_healthy
 
   dashboard-worker:
-    env_file: ./backend/.env.dev
+    env_file:
+      - ./backend/.env.dev
+      - path: ./backend/.env.dev.local   # gitignored; optional local overrides (e.g. GEMINI_API_KEY)
+        required: false
     environment:
       <<: *dev-backend-env
       CELERY_DASHBOARDS_QUEUE: dashboards
@@ -98,7 +110,10 @@ services:
         condition: service_healthy
 
   beat:
-    env_file: ./backend/.env.dev
+    env_file:
+      - ./backend/.env.dev
+      - path: ./backend/.env.dev.local   # gitignored; optional local overrides (e.g. GEMINI_API_KEY)
+        required: false
     environment: *dev-backend-env
     depends_on:
       redis:
