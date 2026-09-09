@@ -42,6 +42,10 @@ services:
       - "127.0.0.1:5433:5432"   # 5433 on the host to avoid clashing with a local Postgres
     volumes:
       - insightmind_dev_db:/var/lib/postgresql/data
+      # Supabase compatibility shim — runs once on first init so the
+      # Supabase-flavoured Alembic migrations (auth.users FK, auth.uid() RLS)
+      # apply against a vanilla Postgres.
+      - ./backend/dev-db-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U insightmind"]
       interval: 5s

@@ -13,7 +13,7 @@ from app.main import app, health_check
 def test_health_check_payload_shape():
     payload = health_check()
     assert payload["status"] == "ok"
-    assert payload["service"] == "query-mind API"
+    assert payload["service"] == "InsightMind AI API"
 
 
 def test_api_router_contains_expected_prefixes():

@@ -48,7 +48,7 @@ app.include_router(api_router)
 
 @app.get("/api/health", response_model=HealthResponse)
 def health_check():
-    return {"status": "ok", "service": "query-mind API", "version": "2.0.0"}
+    return {"status": "ok", "service": "InsightMind AI API", "version": "2.1.0"}
 
 
 @app.get("/api/health/streaming")
