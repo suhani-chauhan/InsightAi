@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { T } from '../dashboard/tokens';
 import { Btn, ErrorBlock, LoadingBlock, Panel, Pill, gradeColor, severityColor } from './ui';
+import { PinToDashboardButton } from './PinToDashboardButton';
 import { analyzeQuality } from '../../services/dataScience';
 import type { QualityReport, WorkspaceStep } from '../../types/dataScience';
 
@@ -43,7 +44,18 @@ export function QualityStep({
       <Panel
         title="Data Quality Score"
         subtitle="Deterministic: each dimension starts at 100 and loses points per issue, weighted by severity."
-        actions={<Btn small onClick={() => onGoto('clean')}>Fix issues</Btn>}
+        actions={
+          <>
+            <PinToDashboardButton
+              title={`Data Quality — ${score.overall}/100`}
+              vizType="bar"
+              columns={['dimension', 'score']}
+              rows={score.dimensions.map((d) => ({ dimension: d.label, score: d.score }))}
+              size="half"
+            />
+            <Btn small onClick={() => onGoto('clean')}>Fix issues</Btn>
+          </>
+        }
       >
         <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ textAlign: 'center' }}>

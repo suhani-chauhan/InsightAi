@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { T } from '../dashboard/tokens';
 import { Btn, ErrorBlock, LoadingBlock, Panel, Pill, num } from './ui';
 import { DsChart } from './DsChart';
+import { PinToDashboardButton } from './PinToDashboardButton';
 import { runEda } from '../../services/dataScience';
 import type { DatasetOverview, EdaResult, WorkspaceStep } from '../../types/dataScience';
 
@@ -101,7 +102,29 @@ export function ExploreStep({
       </Panel>
 
       {eda && eda.numeric_summary.length > 0 && (
-        <Panel title="Numeric summary">
+        <Panel
+          title="Numeric summary"
+          actions={
+            <PinToDashboardButton
+              title="Numeric summary"
+              vizType="table"
+              columns={['column', 'mean', 'median', 'std', 'min', 'max', 'skew']}
+              rows={eda.numeric_summary.map((r) => {
+                const s = r as Record<string, unknown>;
+                return {
+                  column: String(s.column),
+                  mean: s.mean ?? null,
+                  median: s.median ?? null,
+                  std: s.std ?? null,
+                  min: s.min ?? null,
+                  max: s.max ?? null,
+                  skew: s.skew ?? null,
+                };
+              })}
+              size="full"
+            />
+          }
+        >
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.76rem' }}>
               <thead>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { T } from '../dashboard/tokens';
 import { Btn, ErrorBlock, LoadingBlock, Panel, Pill, num } from './ui';
+import { PinToDashboardButton } from './PinToDashboardButton';
 import { detectTask, downloadModel, predict, trainModels } from '../../services/dataScience';
 import type {
   DatasetOverview,
@@ -193,7 +194,25 @@ export function MlStep({
             )}
           </Panel>
 
-          <Panel title="Model comparison" subtitle={`Ranked by ${METRIC_LABEL[result.primary_metric] || result.primary_metric}. Best is highlighted.`}>
+          <Panel
+            title="Model comparison"
+            subtitle={`Ranked by ${METRIC_LABEL[result.primary_metric] || result.primary_metric}. Best is highlighted.`}
+            actions={
+              <PinToDashboardButton
+                title={`Model comparison — ${result.target}`}
+                vizType="table"
+                columns={['model', ...metrics]}
+                rows={result.comparison.map((r) => {
+                  const row: Record<string, unknown> = { model: r.model };
+                  metrics.forEach((m) => {
+                    row[m] = typeof r[m] === 'number' ? Number((r[m] as number).toFixed(4)) : null;
+                  });
+                  return row;
+                })}
+                size="full"
+              />
+            }
+          >
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
                 <thead>
@@ -239,7 +258,22 @@ export function MlStep({
             </div>
           </Panel>
 
-          <Panel title="Feature importance" subtitle={`Method: ${result.feature_importance[0]?.method ?? 'n/a'}. One-hot columns collapsed to their source feature.`}>
+          <Panel
+            title="Feature importance"
+            subtitle={`Method: ${result.feature_importance[0]?.method ?? 'n/a'}. One-hot columns collapsed to their source feature.`}
+            actions={
+              <PinToDashboardButton
+                title={`Feature importance — ${result.target}`}
+                vizType="bar"
+                columns={['feature', 'importance_pct']}
+                rows={result.feature_importance.map((f) => ({
+                  feature: f.feature,
+                  importance_pct: Number((f.importance * 100).toFixed(2)),
+                }))}
+                size="half"
+              />
+            }
+          >
             <div style={{ display: 'grid', gap: 6 }}>
               {result.feature_importance.map((f) => (
                 <div key={f.feature} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

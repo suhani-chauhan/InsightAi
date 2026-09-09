@@ -131,6 +131,8 @@ Start from any of four sources — a **query result** (one click from chat), a *
 
 **Ask InsightMind** answers natural-language questions ("What should I clean first?", "Which model performed best and why?") grounded strictly in the session's computed artifacts. If the LLM is unavailable the panel degrades gracefully — the computed analysis on the page stays accurate.
 
+**Pin to dashboard** — the quality-score breakdown, model comparison, feature importance, and EDA numeric summary each pin to any existing dashboard as a native widget (reusing QueryMind's widget system, drag-and-drop grid, and chart switching).
+
 A safe, clearly-labelled **demo dataset** (employee attrition, seeded with missing values, duplicates, inconsistent categories, and salary outliers) lets you try the whole workflow without connecting a database.
 
 ---
@@ -388,7 +390,7 @@ The suite covers the agent loop, tool behavior, budget/salvage paths, context co
 ## 🗺️ Roadmap
 
 - **Deeper analytical reasoning** — "Why is revenue dropping?" answered with multi-query investigations and narrative reports
-- **Pin Data Science metrics to dashboards** — quality score, best-model F1, top feature, EDA charts as first-class widgets
+- **Agentic Data Science from chat** — "Analyze this dataset" / "Build a model to predict churn" driving the whole pipeline from one message
 - **Background Data Science jobs** — move large-dataset profiling, EDA, and model training onto the existing Celery workers with progress streaming
 - **Excel (.xlsx) upload** — CSV/TSV upload ships now; Excel needs `openpyxl`
 - **More database engines** — MySQL support is scaffolded; broader engine coverage planned
