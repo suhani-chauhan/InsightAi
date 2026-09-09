@@ -138,40 +138,49 @@ def create_session_from_text(
     fmt: str = "csv",
     delimiter: str | None = None,
 ) -> dict[str, Any]:
-    """Parse an uploaded delimited-text file into an analysis session."""
-    # Deterministic delimiter choice — csv.Sniffer misfires badly on 1-column data.
-    if delimiter:
-        candidates = [delimiter]
-    elif fmt == "tsv":
-        candidates = ["\t"]
-    else:
-        first_line = content.splitlines()[0] if content.strip() else ""
-        candidates = [","]
-        for alt in (";", "\t", "|"):
-            if alt in first_line and "," not in first_line:
-                candidates = [alt]
-                break
+    """Parse an uploaded file (csv/tsv text, or base64 xlsx) into a session."""
+    if fmt == "xlsx":
+        import base64
 
-    df = None
-    parse_error: Exception | None = None
-    for sep in candidates:
         try:
-            parsed = pd.read_csv(io.StringIO(content), sep=sep, skip_blank_lines=True)
+            raw = base64.b64decode(content, validate=False)
+            df = pd.read_excel(io.BytesIO(raw), engine="openpyxl")
         except Exception as exc:  # noqa: BLE001
-            parse_error = exc
-            continue
-        df = parsed
-        break
-    if df is None:
-        raise BadRequestError(
-            f"Could not parse the file as {fmt.upper()}: {parse_error}" if parse_error else "Could not parse the file."
-        )
+            raise BadRequestError(f"Could not read the Excel file: {exc}") from exc
+    else:
+        # Deterministic delimiter choice — csv.Sniffer misfires badly on 1-column data.
+        if delimiter:
+            candidates = [delimiter]
+        elif fmt == "tsv":
+            candidates = ["\t"]
+        else:
+            first_line = content.splitlines()[0] if content.strip() else ""
+            candidates = [","]
+            for alt in (";", "\t", "|"):
+                if alt in first_line and "," not in first_line:
+                    candidates = [alt]
+                    break
+
+        df = None
+        parse_error: Exception | None = None
+        for sep in candidates:
+            try:
+                parsed = pd.read_csv(io.StringIO(content), sep=sep, skip_blank_lines=True)
+            except Exception as exc:  # noqa: BLE001
+                parse_error = exc
+                continue
+            df = parsed
+            break
+        if df is None:
+            raise BadRequestError(
+                f"Could not parse the file as {fmt.upper()}: {parse_error}" if parse_error else "Could not parse the file."
+            )
 
     df = df.dropna(axis=1, how="all")
     df.columns = [str(c).strip() for c in df.columns]
     if df.shape[1] == 0:
         raise BadRequestError("The file has no readable columns.")
-    if df.shape[1] == 1 and any(ch in str(df.columns[0]) for ch in (";", "\t", "|", ",")):
+    if fmt != "xlsx" and df.shape[1] == 1 and any(ch in str(df.columns[0]) for ch in (";", "\t", "|", ",")):
         raise BadRequestError(
             "Only one column was detected but the header still contains a separator — check the file's "
             "delimiter (comma vs. semicolon vs. tab)."

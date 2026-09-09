@@ -116,7 +116,7 @@ Connect PostgreSQL databases (including cloud-hosted, e.g. Supabase poolers) thr
 
 ## 🧪 Insight Studio — the Data Science workspace
 
-Start from any of four sources — a **query result** (one click from chat), a **CSV/TSV upload**, a **database table** (connection → table, read once, read-only), or the built-in **demo dataset** — and step through a guided Data Science workflow. Nothing here touches your source database; the workspace operates on a bounded in-memory **analysis copy**.
+Start from any of four sources — a **query result** (one click from chat), a **CSV/TSV/XLSX upload**, a **database table** (connection → table, read once, read-only), or the built-in **demo dataset** — and step through a guided Data Science workflow. Nothing here touches your source database; the workspace operates on a bounded in-memory **analysis copy**.
 
 **Workflow:** `Dataset → Quality → Clean → Explore → ML → Report`, with an **Ask InsightMind** panel available at every step.
 
@@ -218,7 +218,7 @@ All routes are owner-scoped and operate on an in-memory analysis copy:
 
 ```text
 POST /api/data-science/sessions            # from a query result {columns, rows}
-POST /api/data-science/sessions/upload     # from CSV/TSV text {name, content, format}
+POST /api/data-science/sessions/upload     # from CSV/TSV/XLSX {name, content, format}
 POST /api/data-science/sessions/from-table # from a DB table {connection_id, table, db_schema, limit}
 POST /api/data-science/sessions/demo       # built-in demo dataset
 POST /api/data-science/sessions/{id}/profile
@@ -392,7 +392,7 @@ The suite covers the agent loop, tool behavior, budget/salvage paths, context co
 - **Deeper analytical reasoning** — "Why is revenue dropping?" answered with multi-query investigations and narrative reports
 - **Agentic Data Science from chat** — "Analyze this dataset" / "Build a model to predict churn" driving the whole pipeline from one message
 - **Background Data Science jobs** — move large-dataset profiling, EDA, and model training onto the existing Celery workers with progress streaming
-- **Excel (.xlsx) upload** — CSV/TSV upload ships now; Excel needs `openpyxl`
+- **PDF report export** — HTML export ships today; PDF is the natural next format
 - **More database engines** — MySQL support is scaffolded; broader engine coverage planned
 - **Collaboration** — shared workspaces, dashboard permissions, and audit trails
 
@@ -402,5 +402,5 @@ The suite covers the agent loop, tool behavior, budget/salvage paths, context co
 
 - `backend/app` is the canonical backend package; `backend/main.py` is a thin convenience wrapper.
 - Data Science analysis sessions are held **in memory** — bounded (8 per user, 3-hour TTL), owner-scoped, and never persisted or written back to a database. They do not survive a server restart and are not shared across worker processes; this fits the synchronous single-analyst workflow and keeps the source data untouched.
-- Adding the Data Science layer introduces three backend dependencies: `pandas`, `numpy`, `scikit-learn` (see `backend/requirements.txt`). No new environment variables are required — the LLM narration layer reuses the existing `LLM_PROVIDER` / provider-key configuration and degrades gracefully when unavailable.
+- Adding the Data Science layer introduces four backend dependencies: `pandas`, `numpy`, `scikit-learn`, and `openpyxl` (for `.xlsx` uploads) — see `backend/requirements.txt`. `joblib` (model export) ships with scikit-learn. No new environment variables are required — the LLM narration layer reuses the existing `LLM_PROVIDER` / provider-key configuration and degrades gracefully when unavailable.
 - All demo media lives in the [`demos/`](demos/) folder.

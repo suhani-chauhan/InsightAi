@@ -101,21 +101,36 @@ export const useInsightStudioStore = create<InsightStudioState>((set, get) => ({
 
   uploadFile: async (file) => {
     const lower = file.name.toLowerCase();
-    if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
-      set({ error: 'Excel files are not supported yet — export the sheet as CSV and upload that.' });
+    if (lower.endsWith('.xls') && !lower.endsWith('.xlsx')) {
+      set({ error: 'Legacy .xls is not supported — save as .xlsx or CSV.' });
       return null;
     }
     if (file.size > 12_000_000) {
       set({ error: 'File is larger than 12 MB. Trim it or sample it first.' });
       return null;
     }
+    const isXlsx = lower.endsWith('.xlsx');
     set({ loading: true, error: null });
     try {
-      const content = await file.text();
+      let content: string;
+      let format: 'csv' | 'tsv' | 'xlsx';
+      if (isXlsx) {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(reader.error);
+          reader.readAsDataURL(file);
+        });
+        content = dataUrl.split(',')[1] ?? '';
+        format = 'xlsx';
+      } else {
+        content = await file.text();
+        format = lower.endsWith('.tsv') ? 'tsv' : 'csv';
+      }
       const res = await api.uploadDataset({
         name: file.name.replace(/\.[^.]+$/, ''),
         content,
-        format: lower.endsWith('.tsv') ? 'tsv' : 'csv',
+        format,
       });
       set({ sessionId: res.session_id, dataset: res.dataset, pending: null, loading: false });
       return res.session_id;

@@ -43,8 +43,8 @@ export function createDemoSession() {
 
 export interface UploadDatasetInput {
   name: string;
-  content: string;
-  format?: 'csv' | 'tsv';
+  content: string; // UTF-8 text for csv/tsv, base64 for xlsx
+  format?: 'csv' | 'tsv' | 'xlsx';
   delimiter?: string;
 }
 

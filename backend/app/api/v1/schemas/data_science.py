@@ -29,15 +29,16 @@ class FromTableRequest(BaseModel):
 
 
 class UploadDatasetRequest(BaseModel):
-    """A delimited-text file uploaded as UTF-8 text (client reads it with FileReader).
+    """A file uploaded as a JSON payload (the client reads it with FileReader).
 
-    Kept as a JSON text payload rather than multipart so the feature adds no new
-    backend dependency. ~12 MB of text is the hard ceiling.
+    ``content`` is UTF-8 text for csv/tsv and base64 for xlsx. Kept as JSON
+    rather than multipart to avoid a python-multipart dependency. ~16 MB of
+    encoded content is the hard ceiling.
     """
 
     name: str = Field(min_length=1, max_length=200)
-    content: str = Field(min_length=1, max_length=12_000_000)
-    format: Literal["csv", "tsv"] = "csv"
+    content: str = Field(min_length=1, max_length=16_000_000)
+    format: Literal["csv", "tsv", "xlsx"] = "csv"
     delimiter: Optional[str] = Field(default=None, max_length=4)
 
 

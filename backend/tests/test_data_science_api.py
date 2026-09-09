@@ -121,6 +121,37 @@ def test_upload_header_only_rejected(client_as_a):
     assert resp.status_code == 400
 
 
+def test_upload_xlsx_creates_session(client_as_a):
+    import base64
+    import io
+
+    import pandas as pd
+
+    buf = io.BytesIO()
+    pd.DataFrame({"region": ["N", "S", "E"], "sales": [10, 20, 30]}).to_excel(buf, index=False)
+    payload = base64.b64encode(buf.getvalue()).decode()
+
+    resp = client_as_a.post(
+        "/api/data-science/sessions/upload",
+        json={"name": "book.xlsx", "content": payload, "format": "xlsx"},
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["dataset"]["n_rows"] == 3
+    assert body["dataset"]["n_cols"] == 2
+    assert body["dataset"]["source"] == "upload"
+
+
+def test_upload_corrupt_xlsx_rejected(client_as_a):
+    import base64
+
+    resp = client_as_a.post(
+        "/api/data-science/sessions/upload",
+        json={"name": "bad.xlsx", "content": base64.b64encode(b"not a spreadsheet").decode(), "format": "xlsx"},
+    )
+    assert resp.status_code == 400
+
+
 def test_from_table_creates_session(client_as_a, monkeypatch):
     from app.query_engine.results import QueryExecutionResult
     from app.services import query_execution_service

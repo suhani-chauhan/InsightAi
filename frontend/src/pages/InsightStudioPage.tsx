@@ -199,7 +199,7 @@ function Landing({
         <input
           ref={fileRef}
           type="file"
-          accept=".csv,.tsv,text/csv,text/tab-separated-values"
+          accept=".csv,.tsv,.xlsx,text/csv,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           style={{ display: 'none' }}
           onChange={(e) => {
             const file = e.target.files?.[0];
@@ -209,7 +209,7 @@ function Landing({
         />
         <Btn onClick={() => fileRef.current?.click()} disabled={loading}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <Upload size={12} /> Upload a CSV
+            <Upload size={12} /> Upload a file
           </span>
         </Btn>
         <Btn variant="ghost" onClick={() => setShowTablePicker((v) => !v)} disabled={loading}>
@@ -227,7 +227,7 @@ function Landing({
       )}
 
       <p style={{ color: T.text3, fontSize: '0.72rem', marginTop: 14, fontFamily: T.fontMono }}>
-        CSV or TSV up to 12 MB · {'≤'} 100k rows · a database table is read once, read-only, into an analysis copy
+        CSV, TSV or XLSX up to 12 MB · {'≤'} 100k rows · a database table is read once, read-only, into an analysis copy
       </p>
     </div>
   );
