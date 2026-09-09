@@ -126,6 +126,17 @@ def test_prediction_uses_training_pipeline():
     assert "probabilities" in out and abs(sum(out["probabilities"].values()) - 1.0) < 1e-6
 
 
+def test_example_row_is_a_real_complete_row():
+    ds = Dataset.from_records(*_dsargs(_classification_df()))
+    bundle = train_and_compare(ds, "target", cross_validation=False)
+    assert set(bundle.example_row) <= set(bundle.feature_columns)
+    assert bundle.example_row  # non-empty
+    # every value is concrete (not NaN/None) so the default prediction is realistic
+    assert all(v is not None for v in bundle.example_row.values())
+    predicted = predict_with_bundle(bundle, bundle.example_row)
+    assert "prediction" in predicted
+
+
 def test_demo_dataset_full_pipeline(demo_clean):
     detail = detect_task(demo_clean, DEMO_TARGET)
     assert detail["detected_task"] == "classification"

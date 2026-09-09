@@ -68,22 +68,7 @@ export function ReportStep({ sessionId }: { sessionId: string }) {
 
       {report?.sections.map((section) => (
         <Panel key={section.id} title={section.title}>
-          <pre
-            style={{
-              margin: 0,
-              padding: 16,
-              background: T.bg,
-              border: '1px solid rgba(0,0,0,0.06)',
-              fontFamily: T.fontMono,
-              fontSize: '0.72rem',
-              lineHeight: 1.6,
-              color: T.text2,
-              overflowX: 'auto',
-              whiteSpace: 'pre-wrap',
-            }}
-          >
-            {JSON.stringify(section.body, null, 2)}
-          </pre>
+          <SectionBody id={section.id} body={section.body} />
         </Panel>
       ))}
 
@@ -99,6 +84,178 @@ export function ReportStep({ sessionId }: { sessionId: string }) {
     </div>
   );
 }
+
+type Body = Record<string, unknown>;
+
+function SectionBody({ id, body }: { id: string; body: Body }) {
+  if (id === 'overview') return <KeyValues obj={pick(body, ['name', 'rows', 'columns', 'sampled', 'column_kinds'])} />;
+
+  if (id === 'quality') {
+    const dims = (body.dimensions as { label: string; score: number }[]) || [];
+    const issues = (body.top_issues as { title: string; severity: string; recommendation: string }[]) || [];
+    return (
+      <div>
+        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 14 }}>
+          <Stat label="Overall" value={`${body.overall_score ?? '—'} / 100`} />
+          <Stat label="Grade" value={String(body.grade ?? '—')} />
+          <Stat label="Issues" value={String(body.issue_count ?? 0)} />
+        </div>
+        <MiniTable
+          head={['Dimension', 'Score']}
+          rows={dims.map((d) => [d.label, String(d.score)])}
+        />
+        {issues.length > 0 && (
+          <ul style={listStyle}>
+            {issues.map((i, k) => (
+              <li key={k}>
+                <strong>[{i.severity}]</strong> {i.title} — {i.recommendation}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
+  if (id === 'cleaning') {
+    const ops = (body.operations as { action?: string; op?: string }[]) || [];
+    const before = (body.before as Body) || {};
+    const after = (body.after as Body) || {};
+    return (
+      <div>
+        <MiniTable
+          head={['', 'Before', 'After']}
+          rows={[
+            ['Rows', String(before.rows ?? '—'), String(after.rows ?? '—')],
+            ['Missing cells', String(before.missing_cells ?? '—'), String(after.missing_cells ?? '—')],
+            ['Duplicate rows', String(before.duplicate_rows ?? '—'), String(after.duplicate_rows ?? '—')],
+          ]}
+        />
+        <ul style={listStyle}>
+          {ops.map((o, k) => (
+            <li key={k}>{o.action || o.op}</li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
+  if (id === 'eda') {
+    const insights = (body.insights as { category: string; text: string }[]) || [];
+    const corr = (body.top_correlations as { a: string; b: string; corr: number }[]) || [];
+    return (
+      <div>
+        <ul style={listStyle}>
+          {insights.map((i, k) => (
+            <li key={k}>
+              <strong>{i.category}:</strong> {i.text}
+            </li>
+          ))}
+        </ul>
+        {corr.length > 0 && (
+          <MiniTable
+            head={['Pair', 'r']}
+            rows={corr.map((c) => [`${c.a} ↔ ${c.b}`, c.corr.toFixed(2)])}
+          />
+        )}
+      </div>
+    );
+  }
+
+  if (id === 'ml') {
+    const cmp = (body.comparison as Record<string, unknown>[]) || [];
+    const fi = (body.feature_importance as { feature: string; importance: number }[]) || [];
+    const metricKeys = cmp.length
+      ? Object.keys(cmp[0]).filter((k) => typeof cmp[0][k] === 'number' && !['is_best', 'primary_score'].includes(k))
+      : [];
+    return (
+      <div>
+        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 14 }}>
+          <Stat label="Task" value={String(body.task ?? '—')} />
+          <Stat label="Target" value={String(body.target ?? '—')} />
+          <Stat label="Best model" value={String(body.best_model ?? '—')} />
+          <Stat label={String(body.primary_metric ?? 'metric')} value={fmtMetric((body.metrics as Body)?.[String(body.primary_metric)])} />
+        </div>
+        <MiniTable
+          head={['Model', ...metricKeys]}
+          rows={cmp.map((r) => [String(r.model), ...metricKeys.map((k) => fmtMetric(r[k]))])}
+        />
+        {fi.length > 0 && (
+          <MiniTable
+            head={['Feature', 'Importance']}
+            rows={fi.map((f) => [f.feature, `${(f.importance * 100).toFixed(1)}%`])}
+          />
+        )}
+      </div>
+    );
+  }
+
+  return <KeyValues obj={body} />;
+}
+
+function pick(obj: Body, keys: string[]): Body {
+  return Object.fromEntries(keys.filter((k) => k in obj).map((k) => [k, obj[k]]));
+}
+
+function fmtMetric(v: unknown): string {
+  if (typeof v !== 'number') return v == null ? '—' : String(v);
+  return Number.isInteger(v) ? String(v) : v.toFixed(3);
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div style={{ fontFamily: T.fontMono, fontSize: '0.6rem', textTransform: 'uppercase', color: T.text3 }}>{label}</div>
+      <div style={{ fontFamily: T.fontHead, fontStyle: 'italic', fontWeight: 900, fontSize: '1.1rem' }}>{value}</div>
+    </div>
+  );
+}
+
+function KeyValues({ obj }: { obj: Body }) {
+  return (
+    <MiniTable
+      head={['Field', 'Value']}
+      rows={Object.entries(obj).map(([k, v]) => [k, typeof v === 'object' ? JSON.stringify(v) : String(v)])}
+    />
+  );
+}
+
+function MiniTable({ head, rows }: { head: string[]; rows: string[][] }) {
+  return (
+    <div style={{ overflowX: 'auto', marginTop: 8 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.76rem' }}>
+        <thead>
+          <tr style={{ textAlign: 'left', color: T.text3, fontFamily: T.fontMono, fontSize: '0.62rem', textTransform: 'uppercase' }}>
+            {head.map((h, i) => (
+              <th key={i} style={{ padding: '6px 10px' }}>
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+              {r.map((c, j) => (
+                <td key={j} style={{ padding: '6px 10px', color: j === 0 ? T.text : T.text2, fontWeight: j === 0 ? 700 : 400 }}>
+                  {c}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+const listStyle: React.CSSProperties = {
+  margin: '12px 0 0',
+  paddingLeft: 18,
+  fontSize: '0.82rem',
+  lineHeight: 1.8,
+  color: T.text2,
+};
 
 function renderReportHtml(report: DsReport): string {
   const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c] as string);

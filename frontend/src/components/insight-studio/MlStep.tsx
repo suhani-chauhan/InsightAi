@@ -333,8 +333,14 @@ function DownloadModelButton({ sessionId }: { sessionId: string }) {
 function PredictionPanel({ sessionId, result }: { sessionId: string; result: TrainResult }) {
   const [values, setValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
+    const example = result.example_row || {};
     result.feature_schema.forEach((s) => {
-      init[s.name] = s.type === 'number' ? String(s.median ?? '') : String(s.options?.[0] ?? '');
+      const sample = example[s.name];
+      if (sample !== undefined && sample !== null && sample !== '') {
+        init[s.name] = String(sample);
+      } else {
+        init[s.name] = s.type === 'number' ? String(s.median ?? '') : String(s.options?.[0] ?? '');
+      }
     });
     return init;
   });

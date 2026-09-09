@@ -45,6 +45,7 @@ class TrainedModelBundle:
     pipeline: Any
     feature_columns: list[str]
     feature_schema: list[dict[str, Any]] = field(default_factory=list)
+    example_row: dict[str, Any] = field(default_factory=dict)
     label_classes: list[Any] | None = None
     comparison: list[dict[str, Any]] = field(default_factory=list)
     feature_importance: list[dict[str, Any]] = field(default_factory=list)
@@ -385,6 +386,7 @@ def train_and_compare(
 
     importance = _feature_importance(best_pipe, X_test, y_test, task, numeric_features + categorical_features)
     feature_schema = _feature_schema(dataset, list(X.columns), numeric_features, categorical_features)
+    example_row = _example_row(X_test, list(X.columns))
 
     return TrainedModelBundle(
         task=task,
@@ -394,6 +396,7 @@ def train_and_compare(
         pipeline=best_pipe,
         feature_columns=list(X.columns),
         feature_schema=feature_schema,
+        example_row=example_row,
         label_classes=[_json_safe(c) for c in label_classes] if label_classes else None,
         comparison=_decorate_comparison(comparison, primary_metric, best_name),
         feature_importance=importance,
@@ -402,6 +405,20 @@ def train_and_compare(
         n_test=len(X_test),
         warnings=warnings,
     )
+
+
+def _example_row(X_test: pd.DataFrame, feature_columns: list[str]) -> dict[str, Any]:
+    """A real, mostly-complete test-set row to pre-fill the prediction form.
+
+    Prefer a fully non-null row so the default prediction is a realistic point
+    rather than a degenerate all-median one.
+    """
+    if X_test.empty:
+        return {}
+    complete = X_test.dropna()
+    source = complete if not complete.empty else X_test
+    row = source.iloc[len(source) // 2]
+    return {col: _json_safe(row[col]) for col in feature_columns if col in row.index}
 
 
 def _cv_scoring(task: str, primary_metric: str) -> str:

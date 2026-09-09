@@ -218,6 +218,7 @@ export interface TrainResult {
   metrics: Record<string, unknown>;
   feature_importance: FeatureImportance[];
   feature_schema: FeatureSchemaEntry[];
+  example_row: Record<string, unknown>;
   label_classes: (string | number)[] | null;
   n_train: number;
   n_test: number;

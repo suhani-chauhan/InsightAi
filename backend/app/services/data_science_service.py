@@ -538,6 +538,7 @@ def _bundle_payload(bundle: TrainedModelBundle | None) -> dict[str, Any] | None:
         "metrics": bundle.metrics,
         "feature_importance": bundle.feature_importance,
         "feature_schema": bundle.feature_schema,
+        "example_row": bundle.example_row,
         "label_classes": bundle.label_classes,
         "n_train": bundle.n_train,
         "n_test": bundle.n_test,
