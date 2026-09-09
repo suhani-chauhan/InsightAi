@@ -166,3 +166,9 @@ def generate_report(session_id: str, current_user: CurrentUserDep):
 @router.post("/sessions/{session_id}/ask")
 def ask_insightai(session_id: str, request: AskRequest, current_user: CurrentUserDep):
     return svc.ask(current_user.id, session_id, request.question, _llm_ctx(current_user.id, "data_science_ask"))
+
+
+@router.post("/sessions/{session_id}/query")
+def query_dataset(session_id: str, request: AskRequest, current_user: CurrentUserDep):
+    """Natural-language data query — LLM writes read-only DuckDB SQL over the dataset."""
+    return svc.nl_query(current_user.id, session_id, request.question, _llm_ctx(current_user.id, "data_science_query"))

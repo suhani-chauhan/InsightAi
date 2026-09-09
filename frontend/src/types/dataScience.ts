@@ -252,4 +252,14 @@ export interface AskResult {
   llm_available: boolean;
 }
 
+export interface NlQueryResult {
+  answered: boolean;
+  reason?: string;
+  sql?: string;
+  columns?: string[];
+  rows?: Record<string, unknown>[];
+  row_count?: number;
+  truncated?: boolean;
+}
+
 export type WorkspaceStep = 'dataset' | 'quality' | 'clean' | 'explore' | 'ml' | 'report';

@@ -19,6 +19,7 @@ from app.data_science.cleaning import (
 )
 from app.data_science.eda import run_eda
 from app.data_science.ml import detect_task, train_and_compare, predict_with_bundle
+from app.data_science.nl_query import run_nl_query
 from app.data_science.report import build_report
 
 __all__ = [
@@ -32,6 +33,7 @@ __all__ = [
     "apply_operations",
     "CLEANING_OPERATIONS",
     "run_eda",
+    "run_nl_query",
     "detect_task",
     "train_and_compare",
     "predict_with_bundle",

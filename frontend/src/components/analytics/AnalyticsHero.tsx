@@ -55,7 +55,7 @@ export function AnalyticsHero() {
               <Fingerprint size={14} />
               <span style={{ fontSize: '0.62rem', fontWeight: 900, fontFamily: T.fontMono, textTransform: 'uppercase' }}>Session Hash</span>
             </div>
-            <span style={{ fontSize: '0.62rem', fontFamily: T.fontMono, color: T.text, fontWeight: 700 }}>QM_8F2A_9X</span>
+            <span style={{ fontSize: '0.62rem', fontFamily: T.fontMono, color: T.text, fontWeight: 700 }}>IA_8F2A_9X</span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: 12 }}>

@@ -21,8 +21,8 @@ export function ConnectionsSidebar() {
     >
       <div style={{ padding: '16px 14px 12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontFamily: T.fontHead, fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.5px', padding: '4px 6px', marginBottom: 16 }}>
-          <div style={{ width: 26, height: 26, borderRadius: 7, background: `linear-gradient(135deg, ${T.accent}, ${T.purple})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: '#000', fontWeight: 800 }}>Q</div>
-          <span style={{ color: T.text }}>Query<span style={{ color: T.accent }}>Mind</span></span>
+          <div style={{ width: 26, height: 26, borderRadius: 7, background: `linear-gradient(135deg, ${T.accent}, ${T.purple})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: '#000', fontWeight: 800 }}>IA</div>
+          <span style={{ color: T.text }}>Insight<span style={{ color: T.accent }}>AI</span></span>
         </div>
 
         <div style={{ fontSize: '0.62rem', fontWeight: 600, letterSpacing: '1.5px', color: T.text3, textTransform: 'uppercase', padding: '8px 8px 4px', fontFamily: T.fontMono }}>Main</div>

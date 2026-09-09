@@ -511,6 +511,14 @@ def report(user_id: str, session_id: str, llm_context: LlmExecutionContext | Non
     )
 
 
+def nl_query(user_id: str, session_id: str, question: str, llm_context: LlmExecutionContext) -> dict[str, Any]:
+    """Answer a natural-language *data* question by running DuckDB SQL over the working dataset."""
+    from app.data_science.nl_query import run_nl_query
+
+    session = _store.get(session_id, user_id)
+    return run_nl_query(session.working, question, llm_context)
+
+
 def ask(user_id: str, session_id: str, question: str, llm_context: LlmExecutionContext) -> dict[str, Any]:
     session = _store.get(session_id, user_id)
     working = session.working
@@ -587,4 +595,5 @@ __all__ = [
     "export_model",
     "report",
     "ask",
+    "nl_query",
 ]

@@ -3,6 +3,7 @@ import { API_BASE } from '../config';
 import { jsonRequest, request } from './http';
 import type {
   AskResult,
+  NlQueryResult,
   CleaningApplyResult,
   CleaningHistory,
   CleaningOperation,
@@ -171,4 +172,8 @@ export async function downloadModel(sessionId: string): Promise<void> {
 
 export function askInsightAI(sessionId: string, question: string) {
   return jsonRequest<AskResult>(`${BASE}/sessions/${sessionId}/ask`, 'POST', { question });
+}
+
+export function queryDataset(sessionId: string, question: string) {
+  return jsonRequest<NlQueryResult>(`${BASE}/sessions/${sessionId}/query`, 'POST', { question });
 }

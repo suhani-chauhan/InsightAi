@@ -98,12 +98,16 @@ function StatePanel({
   tone = 'neutral',
   actionLabel,
   onAction,
+  secondaryLabel,
+  onSecondary,
 }: {
   title: string;
   body: string;
   tone?: 'neutral' | 'error';
   actionLabel?: string;
   onAction?: () => void;
+  secondaryLabel?: string;
+  onSecondary?: () => void;
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '65vh', gap: 18, textAlign: 'center' }}>
@@ -116,38 +120,61 @@ function StatePanel({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '1.4rem',
+        fontSize: '1rem',
         fontWeight: 900,
         color: tone === 'error' ? T.red : '#fff',
         fontFamily: T.fontHead,
-        fontStyle: 'italic'
-      }}>Q</div>
+        fontStyle: 'italic',
+        letterSpacing: '-0.04em'
+      }}>IA</div>
       <div style={{ fontFamily: T.fontMono, fontWeight: 900, fontSize: '0.8rem', color: tone === 'error' ? T.red : T.text, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
         {title}
       </div>
       <div style={{ fontSize: '0.95rem', color: T.text2, maxWidth: 430, lineHeight: 1.6 }}>
         {body}
       </div>
-      {actionLabel && onAction && (
-        <button
-          onClick={onAction}
-          style={{
-            padding: '11px 18px',
-            borderRadius: 0,
-            border: `1px solid ${tone === 'error' ? '#fecaca' : 'rgba(0,0,0,0.12)'}`,
-            background: '#fff',
-            color: T.text,
-            cursor: 'pointer',
-            fontFamily: T.fontMono,
-            fontSize: '0.7rem',
-            fontWeight: 900,
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase'
-          }}
-        >
-          {actionLabel}
-        </button>
-      )}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {actionLabel && onAction && (
+          <button
+            onClick={onAction}
+            style={{
+              padding: '11px 18px',
+              borderRadius: 0,
+              border: `1px solid ${tone === 'error' ? '#fecaca' : 'rgba(0,0,0,0.12)'}`,
+              background: '#fff',
+              color: T.text,
+              cursor: 'pointer',
+              fontFamily: T.fontMono,
+              fontSize: '0.7rem',
+              fontWeight: 900,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase'
+            }}
+          >
+            {actionLabel}
+          </button>
+        )}
+        {secondaryLabel && onSecondary && (
+          <button
+            onClick={onSecondary}
+            style={{
+              padding: '11px 18px',
+              borderRadius: 0,
+              border: '1px solid rgba(0,0,0,0.12)',
+              background: 'transparent',
+              color: T.text2,
+              cursor: 'pointer',
+              fontFamily: T.fontMono,
+              fontSize: '0.7rem',
+              fontWeight: 900,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase'
+            }}
+          >
+            {secondaryLabel}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -724,7 +751,14 @@ export function ChatPage() {
                 )}
 
                 {showNoConnections && (
-                  <StatePanel title="NO DATABASE CONNECTIONS" body="Connect a PostgreSQL database before starting a chat." actionLabel="CONNECT DATABASE" onAction={() => setShowConnectModal(true)} />
+                  <StatePanel
+                    title="NO DATABASE CONNECTIONS"
+                    body="Chat here runs SQL against a connected PostgreSQL database. To ask questions about a CSV / Excel file you uploaded, open Insight Studio and use the Ask InsightAI panel — it queries your dataset directly."
+                    actionLabel="CONNECT DATABASE"
+                    onAction={() => setShowConnectModal(true)}
+                    secondaryLabel="OPEN INSIGHT STUDIO"
+                    onSecondary={() => navigate('/insight-studio')}
+                  />
                 )}
 
                 {showMessageLoading && (
@@ -740,9 +774,9 @@ export function ChatPage() {
                     <div style={{
                       width: 64, height: 64, borderRadius: 0, background: '#1a1a1a',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '1.8rem', fontWeight: 900, color: '#fff',
+                      fontSize: '1.3rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em',
                       marginBottom: 12, fontFamily: T.fontHead, fontStyle: 'italic'
-                    }}>Q</div>
+                    }}>IA</div>
                     <div style={{
                       fontFamily: T.fontHead, fontWeight: 900, fontSize: 'clamp(1.8rem, 6vw, 2.8rem)',
                       color: T.text, letterSpacing: -1.2, fontStyle: 'italic',

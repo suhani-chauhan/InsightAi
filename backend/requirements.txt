@@ -23,6 +23,7 @@ pandas>=2.2,<3
 numpy>=1.26,<3
 scikit-learn>=1.5,<2
 openpyxl>=3.1,<4  # .xlsx dataset uploads
+duckdb>=1.0,<2  # in-process read-only SQL over uploaded datasets (natural-language query)
 
 # Background Jobs
 celery>=5.4,<6.0
