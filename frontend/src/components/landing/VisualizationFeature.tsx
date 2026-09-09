@@ -65,7 +65,7 @@ export function VisualizationFeature() {
           </span>
         </h2>
         <p style={{ fontSize: 17, lineHeight: 1.62, color: L.text2, margin: '0 0 26px', fontWeight: 500 }}>
-          QueryMind picks the right visualization for your result — bar, line, or pie — and pairs it with a sortable
+          InsightAI picks the right visualization for your result — bar, line, or pie — and pairs it with a sortable
           table. One click to switch views, export, or pin to a dashboard.
         </p>
         <a

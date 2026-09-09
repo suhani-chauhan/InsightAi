@@ -79,7 +79,7 @@ export function SemanticsWorkspace({ connectionId, schema }: { connectionId: str
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap' }}>
         <div>
           <div style={{ color: T.accent, fontFamily: T.fontMono, fontSize: '0.62rem', fontWeight: 900, letterSpacing: '0.12em' }}>SEMANTIC CATALOG</div>
-          <h2 style={{ margin: '8px 0 6px', color: T.text, fontFamily: T.fontHead }}>Teach QueryMind your business language</h2>
+          <h2 style={{ margin: '8px 0 6px', color: T.text, fontFamily: T.fontHead }}>Teach InsightAI your business language</h2>
           <p style={{ margin: 0, maxWidth: 720, color: T.text3, fontSize: '0.78rem', lineHeight: 1.6 }}>
             Definitions are metadata only. They never alter your database and cannot weaken physical schema or safety protections.
           </p>
@@ -110,7 +110,7 @@ export function SemanticsWorkspace({ connectionId, schema }: { connectionId: str
       {loading && <State text="Loading semantic catalog…" />}
       {error && <State text={error} tone="error" />}
       {!loading && !error && definitions.length === 0 && (
-        <State text="No definitions yet. Create one manually or ask QueryMind for draft suggestions." />
+        <State text="No definitions yet. Create one manually or ask InsightAI for draft suggestions." />
       )}
       {!loading && definitions.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(300px, .8fr)', gap: 16, alignItems: 'start' }}>

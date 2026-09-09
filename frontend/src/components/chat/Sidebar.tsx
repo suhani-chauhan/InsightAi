@@ -70,7 +70,7 @@ export function Sidebar({ sessions, activeSessionId, sessionsState = 'ready', se
             Q
           </div>
           <div style={{ fontStyle: 'italic' }}>
-            query-mind
+            InsightAI
           </div>
         </div>
 

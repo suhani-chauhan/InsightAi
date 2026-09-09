@@ -25,7 +25,7 @@ export function ReportStep({ sessionId }: { sessionId: string }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `insightmind-report-${sessionId.slice(0, 8)}.html`;
+    a.download = `insightai-report-${sessionId.slice(0, 8)}.html`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -273,7 +273,7 @@ pre{background:#f6f3ed;padding:14px;overflow-x:auto;font-size:12px;white-space:p
 .summary{background:#f6f3ed;padding:18px;border-left:4px solid #0ea5e9}</style></head>
 <body><h1>${esc(report.title)}</h1>
 <p class="summary">${esc(report.executive_summary)}</p>
-<p><small>Generated ${esc(report.generated_at)} · InsightMind AI</small></p>
+<p><small>Generated ${esc(report.generated_at)} · InsightAI</small></p>
 ${sections}
 <section><h2>Recommendations</h2><ul>${recs}</ul></section>
 </body></html>`;

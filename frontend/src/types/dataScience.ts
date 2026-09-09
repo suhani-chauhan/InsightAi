@@ -1,4 +1,4 @@
-// InsightMind AI — Data Science workspace types.
+// InsightAI — Data Science workspace types.
 // Response payloads are intentionally loose where the backend returns large,
 // deeply-nested analytical objects computed by app.data_science.
 

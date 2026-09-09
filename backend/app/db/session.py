@@ -1,4 +1,4 @@
-"""SQLAlchemy engine and session helpers for query-mind app persistence."""
+"""SQLAlchemy engine and session helpers for InsightAI app persistence."""
 
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Sparkles, X } from 'lucide-react';
 import { T } from '../dashboard/tokens';
-import { askInsightMind } from '../../services/dataScience';
+import { askInsightAI } from '../../services/dataScience';
 
 const SUGGESTIONS = [
   'What are the biggest data quality problems?',
@@ -29,7 +29,7 @@ export function AskPanel({ sessionId, onClose }: { sessionId: string; onClose: (
     setBusy(true);
     setQuestion('');
     try {
-      const res = await askInsightMind(sessionId, trimmed);
+      const res = await askInsightAI(sessionId, trimmed);
       setTurns((prev) => [...prev, { q: trimmed, a: res.answer, llmAvailable: res.llm_available }]);
     } catch (err) {
       setTurns((prev) => [
@@ -55,7 +55,7 @@ export function AskPanel({ sessionId, onClose }: { sessionId: string; onClose: (
     >
       <header style={{ padding: '16px 20px', borderBottom: '1px solid rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: T.fontHead, fontStyle: 'italic', fontWeight: 900 }}>
-          <Sparkles size={16} /> Ask InsightMind
+          <Sparkles size={16} /> Ask InsightAI
         </span>
         <button type="button" onClick={onClose} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: T.text3 }}>
           <X size={16} />

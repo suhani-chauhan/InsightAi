@@ -13,7 +13,7 @@ import { AuthContext } from './useAuth';
 const DEV_MODE = import.meta.env.VITE_DEV_MODE === 'true';
 const MOCK_USER: AuthUserResponse = {
   id: '00000000-0000-0000-0000-000000000000',
-  email: 'dev@query-mind.com',
+  email: 'dev@insightai.local',
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

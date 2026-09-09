@@ -6,7 +6,7 @@ from app.agents.db_agent.trace import TraceRecorder
 
 
 def test_trace_record_emits_tool_log(caplog):
-    caplog.set_level(logging.INFO, logger="query-mind.db_agent")
+    caplog.set_level(logging.INFO, logger="insightai.db_agent")
     trace = TraceRecorder()
     trace.record(
         "search_schema",

@@ -34,7 +34,7 @@ from app.core.config import settings
 from app.db.models.llm import LlmExecutionContext
 from app.integrations.llm_client import get_chat_llm_with_tools
 
-logger = logging.getLogger("query-mind.db_agent")
+logger = logging.getLogger("insightai.db_agent")
 
 _PROMPT_PATH = Path(__file__).with_name("prompts") / "agent_system_prompt.md"
 _PROPOSAL_KEYS = (
@@ -122,7 +122,7 @@ def _build_context_messages(
     messages: list[BaseMessage] = []
     built_in = render_semantics_prompt(resolve_semantics(question, catalog))
     if built_in:
-        messages.append(HumanMessage(content=f"QUERYMIND DEFAULT SEMANTIC CONTEXT\n{built_in}"))
+        messages.append(HumanMessage(content=f"INSIGHTAI DEFAULT SEMANTIC CONTEXT\n{built_in}"))
     user_context = render_untrusted_semantic_context(semantic_context)
     if user_context:
         messages.append(HumanMessage(content=user_context))

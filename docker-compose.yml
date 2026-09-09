@@ -1,4 +1,4 @@
-# query-mind — full local stack.
+# InsightAI — full local stack.
 #
 # Prerequisites (bring your own accounts, see README):
 #   1. backend/.env  — copied from backend/.env.example with your Supabase,

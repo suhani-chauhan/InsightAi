@@ -1,4 +1,4 @@
-"""Alembic environment for query-mind app database migrations."""
+"""Alembic environment for InsightAI app database migrations."""
 
 from __future__ import annotations
 

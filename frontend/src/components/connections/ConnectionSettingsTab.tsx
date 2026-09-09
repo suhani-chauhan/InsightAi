@@ -149,7 +149,7 @@ export function ConnectionSettingsTab({ connection, onConnectionUpdated, onDelet
       <label style={{ ...labelStyle, flexDirection: 'row', marginTop: 12 }}><input type="checkbox" checked={clearCertificates} onChange={event => setClearCertificates(event.target.checked)} /> CLEAR STORED TLS CERTIFICATES</label>
     </Accordion>
 
-    <Accordion id="data-access-scope" title="DATA ACCESS SCOPE" description="Limit QueryMind to selected schemas and tables" open={scopeOpen} onToggle={openScope}>
+    <Accordion id="data-access-scope" title="DATA ACCESS SCOPE" description="Limit InsightAI to selected schemas and tables" open={scopeOpen} onToggle={openScope}>
       {inventoryState === 'loading' && <p style={hintStyle}>Discovering accessible schemas…</p>}
       {inventoryState === 'error' && <button type="button" onClick={() => { void loadScopeInventory(); }} style={secondaryButtonStyle}>RETRY DISCOVERY</button>}
       <label style={labelStyle}>SCOPE MODE<select value={scopeMode} onChange={event => { setScopeMode(event.target.value as 'all' | 'allowlist'); setScopePreview(null); }} style={controlStyle}><option value="all">ALL ACCESSIBLE USER TABLES</option><option value="allowlist">SELECT SCHEMAS / TABLES</option></select></label>
@@ -172,7 +172,7 @@ export function ConnectionSettingsTab({ connection, onConnectionUpdated, onDelet
 
     <section style={{ padding: 18, background: T.redDim, border: `1px solid ${T.red}` }}>
       <h3 style={{ margin: 0, color: T.red, font: `900 .7rem ${T.fontMono}` }}>DANGER ZONE</h3>
-      <p style={{ color: T.text3, font: `600 .65rem/1.6 ${T.fontMono}` }}>Disconnecting removes this source, its cached schema, and associated connection configuration from QueryMind.</p>
+      <p style={{ color: T.text3, font: `600 .65rem/1.6 ${T.fontMono}` }}>Disconnecting removes this source, its cached schema, and associated connection configuration from InsightAI.</p>
       <button type="button" onClick={() => onDelete?.(connection.id)} style={{ ...secondaryButtonStyle, color: T.red, borderColor: T.red }}>DISCONNECT DATABASE</button>
     </section>
   </div>;

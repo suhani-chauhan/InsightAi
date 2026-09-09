@@ -30,10 +30,10 @@ validate_jwt_configuration()
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="InsightMind AI API",
+    title="InsightAI API",
     description=(
-        "AI-Powered Data Intelligence, Smart Data Cleaning, Exploratory Analysis & AutoML. "
-        "Evolved from QueryMind's text-to-SQL foundation."
+        "AI-Powered Data Intelligence, Smart Data Cleaning, Exploratory Analysis & AutoML — "
+        "natural-language SQL, dashboards, profiling, cleaning, EDA and real model training."
     ),
     version="2.1.0",
     lifespan=lifespan,
@@ -48,7 +48,7 @@ app.include_router(api_router)
 
 @app.get("/api/health", response_model=HealthResponse)
 def health_check():
-    return {"status": "ok", "service": "InsightMind AI API", "version": "2.1.0"}
+    return {"status": "ok", "service": "InsightAI API", "version": "2.1.0"}
 
 
 @app.get("/api/health/streaming")

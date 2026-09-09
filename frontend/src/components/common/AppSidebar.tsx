@@ -171,9 +171,9 @@ export function AppSidebar({
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: '#fff', fontSize: '0.8rem', fontWeight: 900, flexShrink: 0, letterSpacing: '-0.03em'
           }}>
-            IM
+            IA
           </div>
-          InsightMind AI
+          InsightAI
         </div>
 
         <NavSection onDashboardHover={onDashboardHover} onNavigate={onNavigate} />

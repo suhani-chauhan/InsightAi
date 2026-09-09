@@ -1,10 +1,10 @@
-# InsightMind AI
+# InsightAI
 
 **AI-Powered Data Intelligence, Smart Data Cleaning, Exploratory Analysis & AutoML.**
 
 Ask your database questions in plain English and get SQL, results, charts, and dashboards back in seconds — then send any result into a full **Data Science workspace** for profiling, quality analysis, smart cleaning, EDA, and real machine-learning models.
 
-> InsightMind AI evolved from **QueryMind**, an AI-powered database-analytics platform. QueryMind's entire feature set — the LangGraph database agent, NL→SQL, dashboards, query library, scheduling — is intact. Everything under **Insight Studio** below is the new Data Intelligence layer built on top of it.
+> InsightAI evolved from **InsightAI**, an AI-powered database-analytics platform. InsightAI's entire feature set — the LangGraph database agent, NL→SQL, dashboards, query library, scheduling — is intact. Everything under **Insight Studio** below is the new Data Intelligence layer built on top of it.
 
 <p align="left">
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
@@ -32,11 +32,11 @@ Ask your database questions in plain English and get SQL, results, charts, and d
 
 ---
 
-## 💡 What is InsightMind AI?
+## 💡 What is InsightAI?
 
-InsightMind AI is a **full-stack AI Data Intelligence platform** that connects databases and query results to intelligent data profiling, automated data cleaning, exploratory analysis, machine learning, predictive insights, dashboards, and natural-language analytics.
+InsightAI is a **full-stack AI Data Intelligence platform** that connects databases and query results to intelligent data profiling, automated data cleaning, exploratory analysis, machine learning, predictive insights, dashboards, and natural-language analytics.
 
-**The BI half (from QueryMind):** connect a real database, type a question like *"How many support tickets are there per category, broken down by priority?"*, and a **tool-calling LangGraph agent** explores your schema, writes the SQL, validates it, runs it safely (read-only), and hands back the answer with an explanation, a results table, and an automatically chosen chart. Under the hood: a 12-tool agent loop with budget enforcement, context compaction, error-recovery ladders, and a deterministic fallback pipeline.
+**The BI half (from InsightAI):** connect a real database, type a question like *"How many support tickets are there per category, broken down by priority?"*, and a **tool-calling LangGraph agent** explores your schema, writes the SQL, validates it, runs it safely (read-only), and hands back the answer with an explanation, a results table, and an automatically chosen chart. Under the hood: a 12-tool agent loop with budget enforcement, context compaction, error-recovery ladders, and a deterministic fallback pipeline.
 
 **The Data Science half (Insight Studio):** click **Analyze Dataset** on any query result and step through a guided workflow — **Dataset → Quality → Clean → Explore → ML → Report**. It profiles the data, scores its quality, recommends (never blindly applies) cleaning operations with a before/after preview and undo history, runs EDA with grounded insights, and trains and compares real scikit-learn models with leakage-safe preprocessing, feature importance, and a live prediction form.
 
@@ -54,7 +54,7 @@ Getting an answer out of a database normally requires you to:
 4. Interpret raw rows into something a human can act on
 5. Rebuild the same reports over and over
 
-InsightMind AI collapses all five steps into a single conversation, while keeping everything **auditable** — every agent step (schema search, table inspection, validation, execution) is traceable in the UI via "Show Agent Steps." From there, one click sends the result into Insight Studio for cleaning, EDA, and modelling.
+InsightAI collapses all five steps into a single conversation, while keeping everything **auditable** — every agent step (schema search, table inspection, validation, execution) is traceable in the UI via "Show Agent Steps." From there, one click sends the result into Insight Studio for cleaning, EDA, and modelling.
 
 ---
 
@@ -118,7 +118,7 @@ Connect PostgreSQL databases (including cloud-hosted, e.g. Supabase poolers) thr
 
 Start from any of four sources — a **query result** (one click from chat), a **CSV/TSV/XLSX upload**, a **database table** (connection → table, read once, read-only), or the built-in **demo dataset** — and step through a guided Data Science workflow. Nothing here touches your source database; the workspace operates on a bounded in-memory **analysis copy**.
 
-**Workflow:** `Dataset → Quality → Clean → Explore → ML → Report`, with an **Ask InsightMind** panel available at every step.
+**Workflow:** `Dataset → Quality → Clean → Explore → ML → Report`, with an **Ask InsightAI** panel available at every step.
 
 | Step | What it does |
 |------|--------------|
@@ -129,9 +129,9 @@ Start from any of four sources — a **query result** (one click from chat), a *
 | **ML** | Auto-detects classification vs regression (user can override). Trains **5 classifiers / 6 regressors** inside an sklearn `Pipeline` + `ColumnTransformer` fitted **only on the training split** — no leakage. Stratified split, 5-fold cross-validation, model comparison ranked by the task-appropriate metric, confusion matrix / ROC-AUC / R² / RMSE, native or permutation **feature importance** (one-hot columns collapsed to their source feature), a dynamic **prediction form** that runs inputs back through the exact fitted pipeline, and a **download** of the trained pipeline + metadata as a `.joblib` artifact |
 | **Report** | Assembles dataset overview, quality summary, cleaning operations, before/after, EDA findings, ML comparison, best model, feature importance, and recommendations — exportable as standalone HTML |
 
-**Ask InsightMind** answers natural-language questions ("What should I clean first?", "Which model performed best and why?") grounded strictly in the session's computed artifacts. If the LLM is unavailable the panel degrades gracefully — the computed analysis on the page stays accurate.
+**Ask InsightAI** answers natural-language questions ("What should I clean first?", "Which model performed best and why?") grounded strictly in the session's computed artifacts. If the LLM is unavailable the panel degrades gracefully — the computed analysis on the page stays accurate.
 
-**Pin to dashboard** — the quality-score breakdown, model comparison, feature importance, and EDA numeric summary each pin to any existing dashboard as a native widget (reusing QueryMind's widget system, drag-and-drop grid, and chart switching).
+**Pin to dashboard** — the quality-score breakdown, model comparison, feature importance, and EDA numeric summary each pin to any existing dashboard as a native widget (reusing InsightAI's widget system, drag-and-drop grid, and chart switching).
 
 A safe, clearly-labelled **demo dataset** (employee attrition, seeded with missing values, duplicates, inconsistent categories, and salary outliers) lets you try the whole workflow without connecting a database.
 
@@ -271,7 +271,7 @@ Just want to try it? This runs the entire stack against a throwaway local Postgr
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
-Open **http://localhost:5173** — you're logged in as the dev user immediately. Everything deterministic works: the full **Insight Studio** workflow (profiling, quality, cleaning, EDA, AutoML, reports), dashboards, connections, and the query library. AI chat and *Ask InsightMind* narration light up if you add a `GEMINI_API_KEY` to `backend/.env.dev`. See [`DATA_SCIENCE.md`](DATA_SCIENCE.md) for the Data Science workflow.
+Open **http://localhost:5173** — you're logged in as the dev user immediately. Everything deterministic works: the full **Insight Studio** workflow (profiling, quality, cleaning, EDA, AutoML, reports), dashboards, connections, and the query library. AI chat and *Ask InsightAI* narration light up if you add a `GEMINI_API_KEY` to `backend/.env.dev`. See [`DATA_SCIENCE.md`](DATA_SCIENCE.md) for the Data Science workflow.
 
 ### 🐳 Quick start with Docker (recommended)
 

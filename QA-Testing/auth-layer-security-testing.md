@@ -1,6 +1,6 @@
 # Authentication Layer — Security & QA Assessment
 
-**Target:** query-mind (FastAPI backend + React frontend)
+**Target:** InsightAI (FastAPI backend + React frontend)
 **Component under test:** Authentication layer (signup, login, refresh, logout, session, JWT verification, CSRF, rate limiting, cookie handling)
 **Test type:** Authorized security assessment (grey-box: source review + live dynamic testing) on a local instance
 **Environment:** Backend `http://localhost:8000`, Frontend `http://localhost:5173`, auth wired to a **real Supabase** project
@@ -237,7 +237,7 @@ the route discarded that result, cleared browser cookies, and always returned
 `200 Signed out`. The tested successful logout proved refresh revocation only
 for the success path; it did not prove revocation during a Supabase outage.
 
-**Remediation.** QueryMind now writes a durable local current-session revocation
+**Remediation.** InsightAI now writes a durable local current-session revocation
 before contacting Supabase. A remote failure remains a silent `200` by product
 decision, but the locally revoked access token remains blocked and the failure
 is logged without tokens or raw session identifiers. A local revocation-storage

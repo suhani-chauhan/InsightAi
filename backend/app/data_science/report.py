@@ -111,7 +111,7 @@ def build_report(
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "title": f"InsightMind AI — {dataset_overview.get('name', 'Dataset')} report",
+        "title": f"InsightAI — {dataset_overview.get('name', 'Dataset')} report",
         "executive_summary": narrative or _fallback_summary(dataset_overview, quality, eda, ml),
         "sections": sections,
         "recommendations": recommendations,

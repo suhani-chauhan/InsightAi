@@ -32,7 +32,7 @@ export function DisconnectConnectionModal({
 
         <div style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <p style={{ margin: 0, color: T.text2, fontSize: '0.78rem', lineHeight: 1.7 }}>
-            This removes the saved connection from query-mind. Saved queries, dashboards, generated templates, and chat flows tied to this source may stop working until they are reconnected.
+            This removes the saved connection from InsightAI. Saved queries, dashboards, generated templates, and chat flows tied to this source may stop working until they are reconnected.
           </p>
           <div style={{ padding: '12px 14px', background: T.redDim, border: `1px solid ${T.red}`, color: T.red, fontFamily: T.fontMono, fontSize: '0.66rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             This action cannot be undone from the app UI.

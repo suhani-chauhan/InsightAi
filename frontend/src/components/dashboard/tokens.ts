@@ -1,4 +1,4 @@
-/* query-mind Design Tokens — Comprehensive Design System */
+/* InsightAI Design Tokens — Comprehensive Design System */
 export const T = {
   // ============ COLORS ============
 

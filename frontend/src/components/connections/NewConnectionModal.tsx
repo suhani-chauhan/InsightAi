@@ -107,7 +107,7 @@ export function NewConnectionModal({ isOpen, onClose, onSaved }: { isOpen: boole
                 <ModalInput label="CONNECTION NAME" placeholder="PROD-DATACENTER-A" value={formData.name} onChange={v => setFormData(prev => ({...prev, name: v}))} />
                 <ModalInput label="HOST ADDRESS" placeholder="LOCALHOST" value={formData.host} onChange={v => setFormData(prev => ({...prev, host: v}))} />
                 <ModalInput label="PORT" placeholder="5432" value={formData.port} onChange={v => setFormData(prev => ({...prev, port: v}))} />
-                <ModalInput label="DATABASE NAME" placeholder="QUERYMIND_PRIMARY" value={formData.database} onChange={v => setFormData(prev => ({...prev, database: v}))} />
+                <ModalInput label="DATABASE NAME" placeholder="INSIGHTAI_PRIMARY" value={formData.database} onChange={v => setFormData(prev => ({...prev, database: v}))} />
                 <ModalInput label="USERNAME" placeholder="ADMIN" value={formData.username} onChange={v => setFormData(prev => ({...prev, username: v}))} />
                 <ModalInput label="PASSWORD" placeholder="••••••••" value={formData.password} onChange={v => setFormData(prev => ({...prev, password: v}))} password />
               </div>

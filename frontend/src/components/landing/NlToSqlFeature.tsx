@@ -78,7 +78,7 @@ export function NlToSqlFeature() {
           }}
         >
           <Sparkles size={14} strokeWidth={1.8} />
-          querymind writes
+          InsightAI writes
         </div>
         <div
           style={{
@@ -144,7 +144,7 @@ export function NlToSqlFeature() {
           </span>
         </h2>
         <p style={{ fontSize: 17, lineHeight: 1.62, color: L.text2, margin: '0 0 26px', fontWeight: 500 }}>
-          QueryMind reads your schema, understands joins and relationships, and translates any question into correct
+          InsightAI reads your schema, understands joins and relationships, and translates any question into correct
           SQL. Review it before it runs, or trust it and go straight to the answer.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

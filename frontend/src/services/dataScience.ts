@@ -1,4 +1,4 @@
-// InsightMind AI — Data Science workspace API client.
+// InsightAI — Data Science workspace API client.
 import { API_BASE } from '../config';
 import { jsonRequest, request } from './http';
 import type {
@@ -158,7 +158,7 @@ export async function downloadModel(sessionId: string): Promise<void> {
   const blob = await res.blob();
   const disposition = res.headers.get('Content-Disposition') || '';
   const match = disposition.match(/filename="?([^"]+)"?/);
-  const filename = match?.[1] || `insightmind-model-${sessionId.slice(0, 8)}.joblib`;
+  const filename = match?.[1] || `insightai-model-${sessionId.slice(0, 8)}.joblib`;
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -169,6 +169,6 @@ export async function downloadModel(sessionId: string): Promise<void> {
   URL.revokeObjectURL(url);
 }
 
-export function askInsightMind(sessionId: string, question: string) {
+export function askInsightAI(sessionId: string, question: string) {
   return jsonRequest<AskResult>(`${BASE}/sessions/${sessionId}/ask`, 'POST', { question });
 }

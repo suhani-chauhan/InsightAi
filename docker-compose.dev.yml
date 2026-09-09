@@ -1,11 +1,11 @@
-# InsightMind AI — zero-setup local stack.
+# InsightAI — zero-setup local stack.
 #
 #   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 #
 # Adds a local throwaway Postgres and swaps in backend/.env.dev, which enables
 # BACKEND_DEV_MODE mock auth (no Supabase account, no Gemini key required).
 # Every request is the dev user; the Data Science engine, dashboards, query
-# library and connections all work. AI chat / Ask InsightMind narration need a
+# library and connections all work. AI chat / Ask InsightAI narration need a
 # Gemini key in backend/.env.dev.
 #
 #   Frontend: http://localhost:5173   API: http://localhost:8000
@@ -18,8 +18,8 @@ x-dev-backend-env: &dev-backend-env
   SUPABASE_URL: ""
   SUPABASE_ANON_KEY: ""
   SUPABASE_JWT_SECRET: ""
-  APP_DATABASE_URL: postgresql+psycopg2://insightmind:insightmind@db:5432/insightmind
-  DATABASE_URL: postgresql://insightmind:insightmind@db:5432/insightmind
+  APP_DATABASE_URL: postgresql+psycopg2://insightai:insightai@db:5432/insightai
+  DATABASE_URL: postgresql://insightai:insightai@db:5432/insightai
   REDIS_URL: redis://redis:6379/0
   CELERY_BROKER_URL: redis://redis:6379/0
   AUTH_COOKIE_SECURE: "false"
@@ -35,19 +35,19 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: insightmind
-      POSTGRES_PASSWORD: insightmind
-      POSTGRES_DB: insightmind
+      POSTGRES_USER: insightai
+      POSTGRES_PASSWORD: insightai
+      POSTGRES_DB: insightai
     ports:
       - "127.0.0.1:5433:5432"   # 5433 on the host to avoid clashing with a local Postgres
     volumes:
-      - insightmind_dev_db:/var/lib/postgresql/data
+      - insightai_dev_db:/var/lib/postgresql/data
       # Supabase compatibility shim — runs once on first init so the
       # Supabase-flavoured Alembic migrations (auth.users FK, auth.uid() RLS)
       # apply against a vanilla Postgres.
       - ./backend/dev-db-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U insightmind"]
+      test: ["CMD-SHELL", "pg_isready -U insightai"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -129,4 +129,4 @@ services:
       dockerfile: Dockerfile.dev
 
 volumes:
-  insightmind_dev_db:
+  insightai_dev_db:

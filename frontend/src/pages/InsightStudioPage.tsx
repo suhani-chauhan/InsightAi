@@ -111,7 +111,7 @@ export function InsightStudioPage() {
         sessionId ? (
           <Btn small variant="ghost" onClick={() => setAskOpen((v) => !v)}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <Sparkles size={12} /> Ask InsightMind
+              <Sparkles size={12} /> Ask InsightAI
             </span>
           </Btn>
         ) : undefined
@@ -192,7 +192,7 @@ function Landing({
       </h2>
       <p style={{ color: T.text3, lineHeight: 1.8, fontSize: '0.88rem', marginBottom: 28 }}>
         Run a query in Chat, then choose <strong>Analyze Dataset</strong> on the result to profile it, fix data-quality
-        issues, explore it, and train real models — without leaving InsightMind. Or upload a CSV, or start with the demo
+        issues, explore it, and train real models — without leaving InsightAI. Or upload a CSV, or start with the demo
         dataset.
       </p>
       <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>

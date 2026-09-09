@@ -96,7 +96,7 @@ export function NewConnectionWizard({ isOpen, onClose, onSaved }: { isOpen: bool
             <Input label="USERNAME" value={fields.username} onChange={value => updateField('username', value)} />
             <Input label="PASSWORD" value={fields.password} onChange={value => updateField('password', value)} secret />
           </div>}
-          <p style={styles.hint}>Use a dedicated PostgreSQL user with CONNECT, USAGE, and SELECT only. QueryMind never tests access by writing data.</p>
+          <p style={styles.hint}>Use a dedicated PostgreSQL user with CONNECT, USAGE, and SELECT only. InsightAI never tests access by writing data.</p>
         </section>
 
         <section style={{ marginTop: 18, border: `1px solid ${T.border}` }}>

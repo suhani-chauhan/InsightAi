@@ -1,4 +1,4 @@
-"""Orchestration for the InsightMind AI Data Science workspace.
+"""Orchestration for the InsightAI Data Science workspace.
 
 Sessions are held **in memory** (bounded LRU + TTL), scoped to the owning user.
 They deliberately do not touch the connected production database — a session is
@@ -453,7 +453,7 @@ def export_model(user_id: str, session_id: str) -> tuple[bytes, str]:
         raise BadRequestError("Train a model before exporting it.")
 
     artifact = {
-        "insightmind_artifact_version": 1,
+        "insightai_artifact_version": 1,
         "pipeline": bundle.pipeline,
         "metadata": {
             "task": bundle.task,
@@ -473,7 +473,7 @@ def export_model(user_id: str, session_id: str) -> tuple[bytes, str]:
     buffer = io.BytesIO()
     joblib.dump(artifact, buffer)
     safe_name = re.sub(r"[^A-Za-z0-9_-]+", "_", session.dataset.name).strip("_") or "dataset"
-    filename = f"insightmind_{safe_name}_{bundle.best_model_name.replace(' ', '')}.joblib"
+    filename = f"insightai_{safe_name}_{bundle.best_model_name.replace(' ', '')}.joblib"
     return buffer.getvalue(), filename
 
 

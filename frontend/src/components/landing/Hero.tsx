@@ -172,7 +172,7 @@ export function Hero() {
             animation: `qm-fade-up 0.75s 0.28s ${L.ease} both`,
           }}
         >
-          Connect your database, ask in plain English, and QueryMind writes the SQL, runs it, and returns clean tables
+          Connect your database, ask in plain English, and InsightAI writes the SQL, runs it, and returns clean tables
           and charts — in seconds.
         </p>
 

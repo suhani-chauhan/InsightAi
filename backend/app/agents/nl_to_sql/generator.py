@@ -8,7 +8,7 @@ from app.agents._llm_content import content_to_text, log_llm_output
 from app.agents.nl_to_sql.llm import get_llm
 from app.db.models.llm import LlmExecutionContext
 
-logger = logging.getLogger("query-mind.nl_to_sql")
+logger = logging.getLogger("insightai.nl_to_sql")
 
 
 def generate_sql(messages: list[dict], llm_context: LlmExecutionContext) -> tuple[str, dict, str]:

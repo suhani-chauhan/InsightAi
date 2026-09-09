@@ -182,7 +182,7 @@ def test_tools_mode_natural_write_intent_is_decided_by_agent(monkeypatch):
                 return_value={
                     "success": True,
                     "tier": "agent",
-                    "explanation": "QueryMind is read-only; I can help inspect the affected rows safely.",
+                    "explanation": "InsightAI is read-only; I can help inspect the affected rows safely.",
                     "response_kind": "refusal",
                     "presentation_kind": "none",
                     "rows": [],

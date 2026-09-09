@@ -1,6 +1,6 @@
 # AI Dashboard Generation
 
-QueryMind can turn a natural-language objective into a private draft dashboard.
+InsightAI can turn a natural-language objective into a private draft dashboard.
 
 ## Configuration
 

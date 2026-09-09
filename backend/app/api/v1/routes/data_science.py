@@ -1,4 +1,4 @@
-"""Data Science workspace endpoints (InsightMind AI).
+"""Data Science workspace endpoints (InsightAI).
 
 Every route is owner-scoped through ``CurrentUserDep``; sessions operate on an
 in-memory analysis copy and never mutate a connected database.
@@ -164,5 +164,5 @@ def generate_report(session_id: str, current_user: CurrentUserDep):
 
 
 @router.post("/sessions/{session_id}/ask")
-def ask_insightmind(session_id: str, request: AskRequest, current_user: CurrentUserDep):
+def ask_insightai(session_id: str, request: AskRequest, current_user: CurrentUserDep):
     return svc.ask(current_user.id, session_id, request.question, _llm_ctx(current_user.id, "data_science_ask"))

@@ -198,7 +198,7 @@ export function ConnectionsPage() {
   return (
     <MainShell
       title="Connections"
-      subtitle="Connect and manage the data sources QueryMind can analyze"
+      subtitle="Connect and manage the data sources InsightAI can analyze"
       badge={pageBadge}
       headerActions={
         <button

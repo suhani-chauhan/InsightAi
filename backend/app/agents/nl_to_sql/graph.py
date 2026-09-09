@@ -13,7 +13,7 @@ from app.query_engine.cancellation import AgentRunCancelled
 from app.query_engine.connection_scope import referenced_tables
 from app.db.models.llm import LlmExecutionContext
 
-logger = logging.getLogger("query-mind.graph")
+logger = logging.getLogger("insightai.graph")
 
 
 class ChatState(TypedDict):
@@ -65,7 +65,7 @@ def generate_sql_node(state: ChatState) -> dict:
     user_msg = state["user_message"].lower()
     if any(keyword in user_msg for keyword in _DESTRUCTIVE_KEYWORDS):
         explanation = (
-            "query-mind is read-only. Data modification queries are not supported.\n\n"
+            "InsightAI is read-only. Data modification queries are not supported.\n\n"
             + explanation
         )
 

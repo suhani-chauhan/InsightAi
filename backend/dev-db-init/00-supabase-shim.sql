@@ -1,4 +1,4 @@
--- InsightMind AI — Supabase compatibility shim for the zero-setup dev stack.
+-- InsightAI — Supabase compatibility shim for the zero-setup dev stack.
 --
 -- The Alembic migrations were written for a Supabase Postgres: they FK to
 -- auth.users, call auth.uid() inside RLS policies, and use uuid_generate_v4().
@@ -33,5 +33,5 @@ CREATE OR REPLACE FUNCTION auth.jwt() RETURNS jsonb
 
 -- The user that BACKEND_DEV_MODE mock auth returns for every request.
 INSERT INTO auth.users (id, email)
-VALUES ('00000000-0000-0000-0000-000000000000', 'dev@query-mind.com')
+VALUES ('00000000-0000-0000-0000-000000000000', 'dev@insightai.local')
 ON CONFLICT (id) DO NOTHING;

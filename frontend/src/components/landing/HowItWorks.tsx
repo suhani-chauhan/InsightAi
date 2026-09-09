@@ -24,7 +24,7 @@ const STEPS: Step[] = [
     ramp: L.sky,
     step: 'STEP 02',
     title: 'Ask in plain English',
-    body: "Type your question like you'd ask a teammate. QueryMind understands your schema and writes correct, optimized SQL.",
+    body: "Type your question like you'd ask a teammate. InsightAI understands your schema and writes correct, optimized SQL.",
   },
   {
     icon: BarChart3,

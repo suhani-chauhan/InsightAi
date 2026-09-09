@@ -76,7 +76,7 @@ htmlcov/
 .ipynb_checkpoints/
 
 # Local mockups & metadata
-querymind-*.html
+insightai-*.html
 # Local/Temporary/Scratch
 scratch/
 .gemini/

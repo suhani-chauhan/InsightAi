@@ -1,4 +1,4 @@
-"""LLM narrative + "Ask InsightMind" layer (master spec §20 / §21 / §43).
+"""LLM narrative + "Ask InsightAI" layer (master spec §20 / §21 / §43).
 
 The LLM only ever *explains* numbers this package already computed. Every call
 is wrapped so the feature degrades to a deterministic fallback if the model or
@@ -16,10 +16,10 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from app.db.models.llm import LlmExecutionContext
 from app.integrations.llm_client import invoke_chat_llm
 
-logger = logging.getLogger("insightmind.data_science.llm")
+logger = logging.getLogger("insightai.data_science.llm")
 
 _GROUNDING_RULE = (
-    "You are InsightMind AI's analytical assistant. You are given a JSON payload of "
+    "You are InsightAI's analytical assistant. You are given a JSON payload of "
     "statistics, data-quality findings, and model metrics that were computed deterministically "
     "in Python. Rules: (1) Use ONLY numbers present in the payload — never invent or recompute "
     "figures. (2) Say 'associated with', not 'causes', unless the payload states a causal test. "
@@ -98,7 +98,7 @@ def narrate_model_results(context: LlmExecutionContext, ml: dict[str, Any]) -> s
 
 
 def answer_question(context: LlmExecutionContext, question: str, artifacts: dict[str, Any]) -> dict[str, Any]:
-    """Free-form 'Ask InsightMind' over whatever artifacts the session has."""
+    """Free-form 'Ask InsightAI' over whatever artifacts the session has."""
     text = _ask(
         context,
         _GROUNDING_RULE

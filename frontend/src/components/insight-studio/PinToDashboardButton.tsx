@@ -61,7 +61,7 @@ export function PinToDashboardButton({ title, vizType, columns, rows, size = 'ha
         target = dashboards[0].id;
       } else {
         try {
-          const created = await createNewDashboard({ name: 'InsightMind', icon: '🧪' });
+          const created = await createNewDashboard({ name: 'InsightAI', icon: '🧪' });
           target = created.id;
         } catch {
           setError('Could not create a dashboard');
@@ -97,7 +97,7 @@ export function PinToDashboardButton({ title, vizType, columns, rows, size = 'ha
             disabled={loading || status === 'saving'}
             style={{ padding: '6px 8px', border: `1.5px solid ${T.border2}`, fontFamily: T.fontMono, fontSize: '0.7rem', background: '#fff' }}
           >
-            <option value="">{loading ? 'Loading…' : dashboards.length ? 'Choose dashboard…' : 'New "InsightMind" dashboard'}</option>
+            <option value="">{loading ? 'Loading…' : dashboards.length ? 'Choose dashboard…' : 'New "InsightAI" dashboard'}</option>
             {dashboards.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.name} ({d.widget_count})

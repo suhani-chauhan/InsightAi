@@ -751,7 +751,7 @@ export function ChatPage() {
                       What would you <br />like to know?
                     </div>
                     <div style={{ fontSize: '1rem', color: T.text2, maxWidth: 460, textAlign: 'center', lineHeight: 1.6, fontWeight: 400, opacity: 0.7 }}>
-                      query-mind translates your plain English questions into optimized SQL, executing them against your database in real-time.
+                      InsightAI translates your plain English questions into optimized SQL, executing them against your database in real-time.
                     </div>
                     <div style={{ width: 'min(900px, 100%)', marginTop: 16 }}>
                       <SuggestionGrid

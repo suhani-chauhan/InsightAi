@@ -596,7 +596,7 @@ function BillingSection() {
 
       <Card title="RESOURCE_CONSUMPTION">
         <UsageBar label="QUERY_CYCLES" value={sub.queries_used} max={sub.queries_limit} color={T.accent} />
-        <UsageBar label="QUERYMIND_DEPLOYMENT_LLM_CALLS" value={sub.deployment_llm_calls_used} max={sub.deployment_llm_calls_limit} color={T.purple} />
+        <UsageBar label="INSIGHTAI_DEPLOYMENT_LLM_CALLS" value={sub.deployment_llm_calls_used} max={sub.deployment_llm_calls_limit} color={T.purple} />
       </Card>
       
       <div style={{ fontSize: '0.6rem', color: T.text3, marginTop: 40, fontFamily: T.fontMono, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.7 }}>

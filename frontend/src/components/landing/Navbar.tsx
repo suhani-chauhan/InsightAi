@@ -54,7 +54,7 @@ export function Navbar() {
           <Database size={19} strokeWidth={2.1} />
         </span>
         <span style={{ fontFamily: L.fontDisplay, fontWeight: 700, fontSize: 21, letterSpacing: '-0.03em' }}>
-          QueryMind
+          InsightAI
         </span>
       </a>
 

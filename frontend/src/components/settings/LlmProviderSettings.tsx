@@ -183,7 +183,7 @@ export function LlmProviderSettings() {
       )}
 
       <section style={{ border: `1px solid ${T.border}`, background: T.s1, padding: 24, marginBottom: 24 }}>
-        <div style={{ color: T.text, fontFamily: T.fontMono, fontWeight: 900, marginBottom: 8 }}>QUERYMIND_DEPLOYMENT_FALLBACK</div>
+        <div style={{ color: T.text, fontFamily: T.fontMono, fontWeight: 900, marginBottom: 8 }}>INSIGHTAI_DEPLOYMENT_FALLBACK</div>
         <div style={{ color: T.text2, fontFamily: T.fontMono, fontSize: '0.68rem', lineHeight: 1.7 }}>
           {fallback.privileged
             ? 'This account has privileged deployment-key access.'
@@ -281,7 +281,7 @@ export function LlmProviderSettings() {
                   <tr key={event.id} style={{ borderBottom: `1px solid ${T.border}`, color: T.text2 }}>
                     <td style={{ padding: '10px 8px', whiteSpace: 'nowrap' }}>{event.created_at ? new Date(event.created_at).toLocaleString() : '-'}</td>
                     <td style={{ padding: '10px 8px' }}>{event.provider.toUpperCase()}</td>
-                    <td style={{ padding: '10px 8px' }}>{event.credential_source === 'user' ? 'YOUR KEY' : 'QUERYMIND TRIAL'}</td>
+                    <td style={{ padding: '10px 8px' }}>{event.credential_source === 'user' ? 'YOUR KEY' : 'INSIGHTAI TRIAL'}</td>
                     <td style={{ padding: '10px 8px' }}>{event.feature}</td>
                     <td style={{ padding: '10px 8px', color: event.status === 'failed' ? T.red : event.status === 'completed' ? T.green : T.yellow }}>{event.status.toUpperCase()}</td>
                     <td style={{ padding: '10px 8px' }}>{event.input_tokens == null && event.output_tokens == null ? '-' : `${event.input_tokens || 0} / ${event.output_tokens || 0}`}</td>

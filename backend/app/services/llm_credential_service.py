@@ -38,7 +38,7 @@ def allowed_models(provider: str) -> list[str]:
 def validate_model(provider: str, model: str) -> str:
     normalized = model.strip()
     if normalized not in allowed_models(provider):
-        raise _error("The selected model is not enabled by this QueryMind deployment.", "llm_model_not_allowed", 422)
+        raise _error("The selected model is not enabled by this InsightAI deployment.", "llm_model_not_allowed", 422)
     return normalized
 
 
@@ -273,7 +273,7 @@ def resolve(context: LlmExecutionContext) -> LlmResolution:
     used, limit = repository.get_fallback_usage(context.owner_id)
     unmetered = privileged or mode == "deployment"
     if not unmetered and used >= limit:
-        raise _error("Your QueryMind deployment-key trial is exhausted. Add a personal API key.", "deployment_llm_trial_exhausted", 402)
+        raise _error("Your InsightAI deployment-key trial is exhausted. Add a personal API key.", "deployment_llm_trial_exhausted", 402)
     return LlmResolution(
         provider=deployment_provider,
         model=validate_model(deployment_provider, settings.resolved_llm_model),
@@ -361,7 +361,7 @@ def invoke_metered(context: LlmExecutionContext, resolution: LlmResolution, call
             interaction_type=context.interaction_type,
         )
     except ValueError as exc:
-        raise _error("Your QueryMind deployment-key trial is exhausted. Add a personal API key.", "deployment_llm_trial_exhausted", 402) from exc
+        raise _error("Your InsightAI deployment-key trial is exhausted. Add a personal API key.", "deployment_llm_trial_exhausted", 402) from exc
     repository.snapshot_run_resolution(context.owner_id, context.workflow_type, context.workflow_id, resolution)
     started = time.perf_counter()
     try:
@@ -405,7 +405,7 @@ async def ainvoke_metered(
             interaction_type=context.interaction_type,
         )
     except ValueError as exc:
-        raise _error("Your QueryMind deployment-key trial is exhausted. Add a personal API key.", "deployment_llm_trial_exhausted", 402) from exc
+        raise _error("Your InsightAI deployment-key trial is exhausted. Add a personal API key.", "deployment_llm_trial_exhausted", 402) from exc
     repository.snapshot_run_resolution(context.owner_id, context.workflow_type, context.workflow_id, resolution)
     started = time.perf_counter()
     try:

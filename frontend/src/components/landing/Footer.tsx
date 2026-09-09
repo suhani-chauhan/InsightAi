@@ -41,7 +41,7 @@ export function Footer() {
                 <Database size={17} strokeWidth={2.1} />
               </span>
               <span style={{ fontFamily: L.fontDisplay, fontWeight: 700, fontSize: 19, letterSpacing: '-0.03em' }}>
-                QueryMind
+                InsightAI
               </span>
             </div>
             <p style={{ fontSize: 14.5, lineHeight: 1.6, color: L.text2, margin: 0, maxWidth: 270, fontWeight: 500 }}>
@@ -86,7 +86,7 @@ export function Footer() {
             fontWeight: 500,
           }}
         >
-          <span>© {new Date().getFullYear()} QueryMind</span>
+          <span>© {new Date().getFullYear()} InsightAI</span>
           <span>Privacy · Terms</span>
         </div>
       </div>

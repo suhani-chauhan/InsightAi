@@ -8,7 +8,7 @@ from typing import Callable
 
 from app.core.secret_detection import redact_secrets
 
-logger = logging.getLogger("query-mind.db_agent")
+logger = logging.getLogger("insightai.db_agent")
 
 
 def _truncate(text: str | None, limit: int = 160) -> str:

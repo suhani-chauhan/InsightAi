@@ -1,8 +1,8 @@
 # Insight Studio — the Data Science workflow
 
-Insight Studio is InsightMind AI's Data Science workspace. It turns a tabular
+Insight Studio is InsightAI's Data Science workspace. It turns a tabular
 dataset into a guided pipeline: **Dataset → Quality → Clean → Explore → ML →
-Report**, with an **Ask InsightMind** panel at every step.
+Report**, with an **Ask InsightAI** panel at every step.
 
 Everything numeric is computed in Python (`pandas` / `numpy` / `scikit-learn`).
 The LLM only *explains* values that have already been computed — it never
@@ -147,7 +147,7 @@ and recommendations. Exportable as standalone HTML from the UI.
 
 ---
 
-## Ask InsightMind
+## Ask InsightAI
 
 `POST .../ask` with `{question}`. Answers are grounded strictly in the
 session's computed artifacts (dataset overview, quality report, cleaning

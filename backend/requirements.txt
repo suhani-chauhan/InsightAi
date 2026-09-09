@@ -1,4 +1,4 @@
-# query-mind Backend Dependencies
+# InsightAI Backend Dependencies
 # All versions pinned to tested, stable releases.
 # To upgrade: test against the new version in a dev branch first.
 
@@ -17,7 +17,7 @@ alembic>=1.14,<2.0
 psycopg2-binary==2.9.10
 pymysql==1.1.1
 
-# Data Science workspace (InsightMind AI) — profiling, cleaning, EDA, AutoML.
+# Data Science workspace (InsightAI) — profiling, cleaning, EDA, AutoML.
 # All numeric analysis, cleaning and model training is computed here, never by the LLM.
 pandas>=2.2,<3
 numpy>=1.26,<3

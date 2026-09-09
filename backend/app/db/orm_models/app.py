@@ -1,4 +1,4 @@
-"""SQLAlchemy ORM models for query-mind app-owned tables."""
+"""SQLAlchemy ORM models for InsightAI app-owned tables."""
 
 from __future__ import annotations
 

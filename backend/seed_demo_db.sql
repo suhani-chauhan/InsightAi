@@ -1,5 +1,5 @@
 -- ============================================================
--- QueryMind Enterprise Demo Database
+-- InsightAI Enterprise Demo Database
 -- PostgreSQL | 25+ tables, 20,000+ rows
 -- Covers: E-Commerce, HR, Projects, Support, Analytics
 -- ============================================================
@@ -1617,7 +1617,7 @@ DECLARE
     cnt BIGINT;
 BEGIN
     RAISE NOTICE '==============================================';
-    RAISE NOTICE 'QueryMind Demo DB - Seed Complete!';
+    RAISE NOTICE 'InsightAI Demo DB - Seed Complete!';
     RAISE NOTICE '==============================================';
     FOR tbl IN
         SELECT tablename FROM pg_tables

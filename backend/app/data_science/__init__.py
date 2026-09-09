@@ -1,4 +1,4 @@
-"""InsightMind AI — Data Science workspace.
+"""InsightAI — Data Science workspace.
 
 Deterministic data-intelligence engine built on pandas / numpy / scikit-learn.
 

@@ -11,7 +11,7 @@ from app.agents._llm_content import log_llm_output
 from app.agents._prompt_loader import load_prompt
 from app.db.models.llm import LlmExecutionContext
 
-logger = logging.getLogger("query-mind.visualization")
+logger = logging.getLogger("insightai.visualization")
 
 _PROMPT_PATH = Path(__file__).with_name("prompts") / "blueprint_prompt.md"
 

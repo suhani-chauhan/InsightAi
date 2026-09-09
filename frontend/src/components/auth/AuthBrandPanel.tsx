@@ -96,7 +96,7 @@ export function AuthBrandPanel() {
           <Database size={21} strokeWidth={2.1} />
         </span>
         <span style={{ fontFamily: L.fontDisplay, fontWeight: 700, fontSize: 22, letterSpacing: '-0.03em' }}>
-          QueryMind
+          InsightAI
         </span>
       </a>
 

@@ -1,4 +1,4 @@
-# InsightMind AI — DEV-ONLY frontend image.
+# InsightAI — DEV-ONLY frontend image.
 # Bakes dev-mode VITE_* values so the SPA runs with mock auth and no Supabase.
 # Used by docker-compose.dev.yml. The production image is ./Dockerfile.
 

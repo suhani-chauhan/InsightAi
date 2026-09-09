@@ -34,7 +34,7 @@ export function ConnectionOverviewTab({ connection, schema, schemaState, queryHi
   return <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
     <div className="connection-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14 }}>
       <SummaryCard value={connection.health_state.toUpperCase()} label="CONNECTION HEALTH" detail={`Latest latency ${formatLatency(testResult?.latency_ms ?? connection.latency)}`} color={healthColor} />
-      <SummaryCard value={schemaState === 'loading' ? '…' : String(tables.length)} label="TABLES DISCOVERED" detail={schemaState === 'error' ? 'Schema unavailable' : 'Available to QueryMind'} />
+      <SummaryCard value={schemaState === 'loading' ? '…' : String(tables.length)} label="TABLES DISCOVERED" detail={schemaState === 'error' ? 'Schema unavailable' : 'Available to InsightAI'} />
       <SummaryCard value={formatTimestamp(connection.last_schema_sync_at)} label="LAST SCHEMA REFRESH" detail={connection.schema_refresh_enabled ? 'Automatic refresh enabled' : 'Manual refresh'} color={T.purple} />
     </div>
 

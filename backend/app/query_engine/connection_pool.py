@@ -151,7 +151,7 @@ def _diagnostic_for_exception(exc: Exception) -> tuple[str, str, str, list[str]]
     if sqlstate == "3D000" or "database" in lowered and "does not exist" in lowered:
         return "connection_database_not_found", "database", "Authentication succeeded, but the requested database was not found.", ["Check the database name.", "Confirm the user can connect to this database."]
     if sqlstate == "42501" or "permission denied" in lowered:
-        return "connection_permission_denied", "permission", "The database user does not have the required read access.", ["Grant CONNECT and SELECT privileges to a dedicated QueryMind user."]
+        return "connection_permission_denied", "permission", "The database user does not have the required read access.", ["Grant CONNECT and SELECT privileges to a dedicated InsightAI user."]
     if "could not translate host" in lowered or "name or service not known" in lowered:
         return "connection_dns_failed", "network", "The database hostname could not be resolved.", ["Check the hostname and DNS configuration."]
     if "connection refused" in lowered:
@@ -229,7 +229,7 @@ def diagnose_connection_sync(config: ConnectionRequest) -> ConnectionTestResult:
             warnings.append(
                 {
                     "code": "database_user_has_write_privileges",
-                    "message": "Use a dedicated SELECT-only database role. QueryMind still enforces read-only transactions.",
+                    "message": "Use a dedicated SELECT-only database role. InsightAI still enforces read-only transactions.",
                 }
             )
         return ConnectionTestResult(
