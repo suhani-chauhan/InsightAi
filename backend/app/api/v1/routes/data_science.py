@@ -15,6 +15,7 @@ from app.api.v1.schemas.data_science import (
     CreateSessionRequest,
     DetectTaskRequest,
     EdaRequest,
+    FromTableRequest,
     PredictRequest,
     SessionCreatedResponse,
     TrainRequest,
@@ -44,6 +45,17 @@ def create_session(request: CreateSessionRequest, current_user: CurrentUserDep):
         name=request.name,
         source=request.source,
         source_detail=request.source_detail,
+    )
+
+
+@router.post("/sessions/from-table", response_model=SessionCreatedResponse)
+async def create_session_from_table(request: FromTableRequest, current_user: CurrentUserDep):
+    return await svc.create_session_from_table(
+        current_user.id,
+        connection_id=request.connection_id,
+        table=request.table,
+        schema=request.db_schema,
+        limit=request.limit,
     )
 
 

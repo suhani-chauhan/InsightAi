@@ -51,6 +51,17 @@ export function uploadDataset(input: UploadDatasetInput) {
   return jsonRequest<SessionCreatedResponse>(`${BASE}/sessions/upload`, 'POST', input);
 }
 
+export interface FromTableInput {
+  connection_id: string;
+  table: string;
+  db_schema?: string;
+  limit?: number;
+}
+
+export function createSessionFromTable(input: FromTableInput) {
+  return jsonRequest<SessionCreatedResponse>(`${BASE}/sessions/from-table`, 'POST', input);
+}
+
 export function getSession(sessionId: string) {
   return request<DatasetOverview>(`${BASE}/sessions/${sessionId}`);
 }

@@ -121,6 +121,65 @@ def test_upload_header_only_rejected(client_as_a):
     assert resp.status_code == 400
 
 
+def test_from_table_creates_session(client_as_a, monkeypatch):
+    from app.query_engine.results import QueryExecutionResult
+    from app.services import query_execution_service
+
+    async def fake_exec(user_id, connection_id, sql, row_limit=500, readonly=None):
+        assert sql == 'SELECT * FROM "public"."customers" LIMIT 100'
+        return QueryExecutionResult(
+            success=True,
+            columns=["id", "country"],
+            rows=[{"id": 1, "country": "US"}, {"id": 2, "country": "UK"}],
+            row_count=2,
+        )
+
+    monkeypatch.setattr(query_execution_service, "execute_for_connection", fake_exec)
+    resp = client_as_a.post(
+        "/api/data-science/sessions/from-table",
+        json={"connection_id": "c1", "table": "customers", "db_schema": "public", "limit": 100},
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["dataset"]["source"] == "database_table"
+    assert body["dataset"]["n_rows"] == 2
+
+
+def test_from_table_rejects_unsafe_identifier(client_as_a, monkeypatch):
+    from app.services import query_execution_service
+
+    called = False
+
+    async def fake_exec(*a, **k):
+        nonlocal called
+        called = True
+        raise AssertionError("executor must not run for an invalid identifier")
+
+    monkeypatch.setattr(query_execution_service, "execute_for_connection", fake_exec)
+    resp = client_as_a.post(
+        "/api/data-science/sessions/from-table",
+        json={"connection_id": "c1", "table": "users; DROP TABLE users"},
+    )
+    assert resp.status_code in (400, 422)
+    assert called is False
+
+
+def test_from_table_surfaces_execution_error(client_as_a, monkeypatch):
+    from app.query_engine.results import QueryExecutionResult
+    from app.services import query_execution_service
+
+    async def fake_exec(*a, **k):
+        return QueryExecutionResult(success=False, error="permission denied for table secrets")
+
+    monkeypatch.setattr(query_execution_service, "execute_for_connection", fake_exec)
+    resp = client_as_a.post(
+        "/api/data-science/sessions/from-table",
+        json={"connection_id": "c1", "table": "secrets"},
+    )
+    assert resp.status_code == 400
+    assert "permission denied" in resp.json()["error"]["message"]
+
+
 def test_profile_quality_flow(client_as_a, demo_session):
     prof = client_as_a.post(f"/api/data-science/sessions/{demo_session}/profile")
     assert prof.status_code == 200

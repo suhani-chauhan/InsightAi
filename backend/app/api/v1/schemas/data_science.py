@@ -20,6 +20,14 @@ class CreateSessionRequest(BaseModel):
     source_detail: dict[str, Any] = Field(default_factory=dict)
 
 
+class FromTableRequest(BaseModel):
+    connection_id: str = Field(min_length=1)
+    table: str = Field(min_length=1, max_length=63)
+    # 'schema' shadows a BaseModel member, so the wire name is 'db_schema'.
+    db_schema: Optional[str] = Field(default=None, max_length=63)
+    limit: int = Field(default=5000, ge=1, le=20000)
+
+
 class UploadDatasetRequest(BaseModel):
     """A delimited-text file uploaded as UTF-8 text (client reads it with FileReader).
 
@@ -79,6 +87,7 @@ class SessionCreatedResponse(BaseModel):
 __all__ = [
     "CreateSessionRequest",
     "UploadDatasetRequest",
+    "FromTableRequest",
     "CleaningOperation",
     "CleaningOperationsRequest",
     "EdaRequest",

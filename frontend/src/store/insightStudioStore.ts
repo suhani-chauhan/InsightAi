@@ -24,6 +24,7 @@ interface InsightStudioState {
   createFromPending: () => Promise<string | null>;
   startDemo: () => Promise<string | null>;
   uploadFile: (file: File) => Promise<string | null>;
+  fromTable: (input: { connectionId: string; table: string; schema?: string }) => Promise<string | null>;
   loadSession: (sessionId: string) => Promise<void>;
   refreshOverview: () => Promise<void>;
   reset: () => void;
@@ -120,6 +121,22 @@ export const useInsightStudioStore = create<InsightStudioState>((set, get) => ({
       return res.session_id;
     } catch (err) {
       set({ loading: false, error: message(err, 'Failed to read that file') });
+      return null;
+    }
+  },
+
+  fromTable: async ({ connectionId, table, schema }) => {
+    set({ loading: true, error: null });
+    try {
+      const res = await api.createSessionFromTable({
+        connection_id: connectionId,
+        table,
+        db_schema: schema,
+      });
+      set({ sessionId: res.session_id, dataset: res.dataset, pending: null, loading: false });
+      return res.session_id;
+    } catch (err) {
+      set({ loading: false, error: message(err, 'Failed to read that table') });
       return null;
     }
   },

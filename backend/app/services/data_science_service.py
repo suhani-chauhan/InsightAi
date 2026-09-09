@@ -10,6 +10,7 @@ is acceptable for the synchronous, single-analyst workflow this ships with.
 from __future__ import annotations
 
 import io
+import re
 import threading
 import time
 import uuid
@@ -188,6 +189,68 @@ def create_session_from_text(
         name=name.strip() or "Uploaded dataset",
         source="upload",
         source_detail={"format": fmt, "original_columns": df.shape[1]},
+    )
+    return _register(user_id, dataset)
+
+
+_IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_$]{0,62}$")
+_MAX_TABLE_ROWS = 20_000
+
+
+def _safe_identifier(value: str, kind: str) -> str:
+    value = (value or "").strip().strip('"')
+    if not _IDENTIFIER_RE.match(value):
+        raise BadRequestError(f"Invalid {kind} name: {value!r}. Only letters, digits and underscore are allowed.")
+    return value
+
+
+async def create_session_from_table(
+    user_id: str,
+    *,
+    connection_id: str,
+    table: str,
+    schema: str | None = None,
+    limit: int = 5_000,
+) -> dict[str, Any]:
+    """Pull a bounded, read-only sample of a database table into a session.
+
+    Runs through the existing query engine, so read-only enforcement, statement
+    timeouts, connection-scope checks and row limits all apply. The source table
+    is only ever read.
+    """
+    from app.services.query_execution_service import execute_for_connection
+
+    table_id = _safe_identifier(table, "table")
+    qualified = f'"{table_id}"'
+    if schema:
+        schema_id = _safe_identifier(schema, "schema")
+        qualified = f'"{schema_id}".{qualified}'
+
+    row_limit = max(1, min(int(limit), _MAX_TABLE_ROWS))
+    sql = f"SELECT * FROM {qualified} LIMIT {row_limit}"
+
+    try:
+        result = await execute_for_connection(user_id, connection_id, sql, row_limit=row_limit, readonly=True)
+    except ValueError as exc:
+        raise BadRequestError(str(exc)) from exc
+
+    if not result.success:
+        raise BadRequestError(result.error or "The table could not be read.")
+    if not result.rows:
+        raise BadRequestError(f"'{table_id}' returned no rows.")
+
+    dataset = Dataset.from_records(
+        result.columns,
+        result.rows,
+        name=table_id,
+        source="database_table",
+        source_detail={
+            "connection_id": connection_id,
+            "schema": schema,
+            "table": table_id,
+            "sampled_rows": result.row_count,
+            "truncated": result.truncated,
+        },
     )
     return _register(user_id, dataset)
 
@@ -458,6 +521,7 @@ def _trim_eda(eda_data: dict[str, Any] | None) -> dict[str, Any] | None:
 __all__ = [
     "create_session_from_records",
     "create_session_from_text",
+    "create_session_from_table",
     "create_demo_session",
     "list_sessions",
     "get_overview",

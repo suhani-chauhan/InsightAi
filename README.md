@@ -116,7 +116,7 @@ Connect PostgreSQL databases (including cloud-hosted, e.g. Supabase poolers) thr
 
 ## 🧪 Insight Studio — the Data Science workspace
 
-Take any query result, a **CSV/TSV upload**, or the built-in demo dataset into a guided, multi-step Data Science workflow. Nothing here touches your source database — the workspace operates on a bounded in-memory **analysis copy**.
+Start from any of four sources — a **query result** (one click from chat), a **CSV/TSV upload**, a **database table** (connection → table, read once, read-only), or the built-in **demo dataset** — and step through a guided Data Science workflow. Nothing here touches your source database; the workspace operates on a bounded in-memory **analysis copy**.
 
 **Workflow:** `Dataset → Quality → Clean → Explore → ML → Report`, with an **Ask InsightMind** panel available at every step.
 
@@ -217,6 +217,7 @@ All routes are owner-scoped and operate on an in-memory analysis copy:
 ```text
 POST /api/data-science/sessions            # from a query result {columns, rows}
 POST /api/data-science/sessions/upload     # from CSV/TSV text {name, content, format}
+POST /api/data-science/sessions/from-table # from a DB table {connection_id, table, db_schema, limit}
 POST /api/data-science/sessions/demo       # built-in demo dataset
 POST /api/data-science/sessions/{id}/profile
 POST /api/data-science/sessions/{id}/quality
@@ -389,7 +390,6 @@ The suite covers the agent loop, tool behavior, budget/salvage paths, context co
 - **Pin Data Science metrics to dashboards** — quality score, best-model F1, top feature, EDA charts as first-class widgets
 - **Background Data Science jobs** — move large-dataset profiling, EDA, and model training onto the existing Celery workers with progress streaming
 - **Excel (.xlsx) upload** — CSV/TSV upload ships now; Excel needs `openpyxl`
-- **DB table picker** — select connection → schema → table as a dataset source
 - **More database engines** — MySQL support is scaffolded; broader engine coverage planned
 - **Collaboration** — shared workspaces, dashboard permissions, and audit trails
 

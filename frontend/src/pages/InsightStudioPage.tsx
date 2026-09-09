@@ -10,6 +10,7 @@ import { ExploreStep } from '../components/insight-studio/ExploreStep';
 import { MlStep } from '../components/insight-studio/MlStep';
 import { ReportStep } from '../components/insight-studio/ReportStep';
 import { AskPanel } from '../components/insight-studio/AskPanel';
+import { TableSourcePicker } from '../components/insight-studio/TableSourcePicker';
 import { Btn, ErrorBlock } from '../components/insight-studio/ui';
 import { useInsightStudioStore } from '../store/insightStudioStore';
 import type { WorkspaceStep } from '../types/dataScience';
@@ -24,6 +25,7 @@ export function InsightStudioPage() {
     createFromPending,
     startDemo,
     uploadFile,
+    fromTable,
     refreshOverview,
     reset,
   } = useInsightStudioStore();
@@ -124,7 +126,7 @@ export function InsightStudioPage() {
           )}
 
           {!sessionId ? (
-            <Landing loading={loading} onDemo={startDemo} onUpload={uploadFile} />
+            <Landing loading={loading} onDemo={startDemo} onUpload={uploadFile} onPickTable={fromTable} />
           ) : !dataset ? (
             <div style={{ padding: 60, textAlign: 'center', color: T.text3, fontFamily: T.fontMono }}>
               Loading analysis session…
@@ -158,12 +160,15 @@ function Landing({
   loading,
   onDemo,
   onUpload,
+  onPickTable,
 }: {
   loading: boolean;
   onDemo: () => void;
   onUpload: (file: File) => void;
+  onPickTable: (input: { connectionId: string; table: string; schema?: string }) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [showTablePicker, setShowTablePicker] = useState(false);
 
   return (
     <div style={{ maxWidth: 620, margin: '80px auto 0', textAlign: 'center' }}>
@@ -207,12 +212,22 @@ function Landing({
             <Upload size={12} /> Upload a CSV
           </span>
         </Btn>
+        <Btn variant="ghost" onClick={() => setShowTablePicker((v) => !v)} disabled={loading}>
+          From a database table
+        </Btn>
         <Btn variant="ghost" onClick={onDemo} disabled={loading}>
           {loading ? 'Loading…' : 'Use the demo dataset'}
         </Btn>
       </div>
+
+      {showTablePicker && (
+        <div style={{ marginTop: 20, padding: 18, border: '1px solid rgba(0,0,0,0.1)', background: '#fff' }}>
+          <TableSourcePicker onPick={onPickTable} disabled={loading} />
+        </div>
+      )}
+
       <p style={{ color: T.text3, fontSize: '0.72rem', marginTop: 14, fontFamily: T.fontMono }}>
-        CSV or TSV up to 12 MB · {'≤'} 100k rows · nothing is stored server-side
+        CSV or TSV up to 12 MB · {'≤'} 100k rows · a database table is read once, read-only, into an analysis copy
       </p>
     </div>
   );
