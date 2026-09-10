@@ -52,65 +52,61 @@ InsightAI collapses all five steps into a single conversation, while keeping eve
 
 ## 💬 AI Chat — from question to insight
 
-Ask a question, watch the agent reason through your schema, and get back explained SQL plus results.
+Ask a question in plain English. The agent writes the SQL, runs it read-only, and returns a sortable results table with an auto-selected chart you can switch between Bar / Line / Pie / Area.
 
-![Natural language to SQL with explanation and agent steps](demos/chat_1.png)
+![Natural-language question turned into SQL, a results table and an auto-selected line chart](demos/chat.jpg)
 
-The agent explains *how* it derived the query — which tables it joined, how it grouped, and why:
+Every step is auditable — expand the trace to see exactly what the agent did: schema search, table inspection, the read-only query, and evidence checks.
 
-![Complex query with HAVING clause and detailed explanation](demos/chatt_3.png)
-
-Results render as a sortable table with execution time, and a chart is auto-selected to fit the data shape:
-
-![Results table with average ratings and review counts](demos/chat_4.png)
-
-Charts are interactive — hover for exact values, switch between Bar, Line, Pie, and Area with one click:
-
-![Grouped bar chart with hover tooltips per ticket category](demos/chat_2.png)
-
-Dual-axis charts are handled automatically when the metrics live on different scales:
-
-![Dual y-axis chart comparing average rating vs review count](demos/chat_5.png)
-
-Multi-grid KPI views break one answer into per-segment mini-dashboards:
-
-![Multi-grid KPI breakdown by department](demos/chat_6.png)
+![Agent trace showing schema context, table inspection, read-only query and answer](demos/chat_agent_trace.jpg)
 
 ---
 
 ## 📊 Dashboards — pin answers, keep them live
 
-Any chat result can be added to a dashboard in one click. Widgets are drag-and-drop, resizable, and each one can switch its own chart type. Dashboards support runtime filters, PNG export, and scheduled refresh.
+Any chat result — or any Insight Studio artifact — can be added to a dashboard in one click. Widgets are drag-and-drop, resizable, and each one can switch its own chart type. Dashboards support runtime filters, PNG/CSV export, and scheduled refresh.
 
-![Dashboard with line and bar widgets for order analytics](demos/Dashboard_1.png)
-
-![Dashboard with project performance and salary breakdowns](demos/Dashboard_2.png)
+![A dashboard with a model-comparison table pinned from Insight Studio](demos/dashboard.jpg)
 
 ---
 
 ## 📚 Query Library — save, organize, schedule
 
-Every useful query can be saved into folders, tagged, re-run, and scheduled. The library shows the SQL, run history, and last-run status per query. Scheduled queries execute in the background via Celery workers.
-
-![Query library with folders, saved SQL, and scheduling](demos/Library_1.png)
+Every useful query can be saved into folders, tagged, re-run, and scheduled (daily / weekly / monthly). The library shows the SQL, run history, and last-run status per query; scheduled runs execute in the background via Celery workers.
 
 ---
 
 ## 🔌 Connections — real databases, safely
 
-Connect PostgreSQL databases (including cloud-hosted, e.g. Supabase poolers) through a guided wizard with SSL and SSH-tunnel support. Each connection gets a live health check, latency telemetry, and a fully mapped schema ledger.
+Connect PostgreSQL databases (including cloud-hosted, e.g. Supabase poolers) through a guided wizard with SSL and SSH-tunnel support. Each connection gets a live health check, latency telemetry, a fully mapped schema ledger, and read-only enforcement.
 
-![Connection detail with schema ledger, health, and telemetry](demos/connection_1.png)
-
-![Guided source registration wizard with credentials step](demos/connection_2.png)
+![Connection detail — LIVE health, 33 tables discovered, read-only, schema ledger](demos/connections.jpg)
 
 ---
 
 ## 🧪 Insight Studio — the Data Science workspace
 
-Start from any of four sources — a **query result** (one click from chat), a **CSV/TSV/XLSX upload**, a **database table** (connection → table, read once, read-only), or the built-in **demo dataset** — and step through a guided Data Science workflow. Nothing here touches your source database; the workspace operates on a bounded in-memory **analysis copy**.
+Start from any of four sources — a **query result** (one click from chat), a **CSV / TSV / XLSX upload**, a **database table** (read once, read-only), or the built-in **demo dataset** — and step through a guided workflow. Nothing here touches your source database; the workspace operates on a bounded in-memory **analysis copy**.
+
+![Insight Studio landing — the four dataset sources](demos/insight_studio_landing.jpg)
 
 **Workflow:** `Dataset → Quality → Clean → Explore → ML → Report`, with an **Ask InsightAI** panel available at every step.
+
+The **Dataset** step infers column kinds and computes per-column statistics — missing %, unique, mean / median / mode, quantiles, IQR, outliers, skew:
+
+![Dataset step — stat tiles and the inferred-kind column table](demos/insight_studio_dataset.jpg)
+
+The **Quality** step runs seven issue detectors and an explainable **0–100 score**. Every figure is computed; the narrative box explains those numbers and never invents new ones:
+
+![Quality step — 82.9/100 score, per-dimension bars, and a grounded narrative](demos/insight_studio_quality.jpg)
+
+The **ML** step trains and compares real scikit-learn models (preprocessing fitted on the training split only — no leakage), ranks them by the task-appropriate metric, and shows feature importance collapsed to source columns:
+
+![ML step — model comparison table and feature-importance bars](demos/insight_studio_ml.jpg)
+
+**Ask InsightAI** answers analytical questions from the computed artifacts *and* queries the dataset itself in plain English — it writes read-only DuckDB SQL and runs it:
+
+![Ask InsightAI panel — a natural-language query with the generated SQL and result table](demos/insight_studio_ask.jpg)
 
 | Step | What it does |
 |------|--------------|
