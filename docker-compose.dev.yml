@@ -19,7 +19,7 @@ x-dev-backend-env: &dev-backend-env
   SUPABASE_ANON_KEY: ""
   SUPABASE_JWT_SECRET: ""
   APP_DATABASE_URL: postgresql+psycopg2://insightai:insightai@db:5432/insightai
-  DATABASE_URL: postgresql://insightai:insightai@db:5432/insightai
+  DATABASE_URL: postgresql://insightai:insightai@db:5432/insightai_demo
   REDIS_URL: redis://redis:6379/0
   CELERY_BROKER_URL: redis://redis:6379/0
   AUTH_COOKIE_SECURE: "false"
@@ -42,15 +42,21 @@ services:
       - "127.0.0.1:5433:5432"   # 5433 on the host to avoid clashing with a local Postgres
     volumes:
       - insightai_dev_db:/var/lib/postgresql/data
-      # Supabase compatibility shim — runs once on first init so the
-      # Supabase-flavoured Alembic migrations (auth.users FK, auth.uid() RLS)
-      # apply against a vanilla Postgres.
+      # Runs once on first init, in filename order:
+      #   00-supabase-shim.sql  — auth.users FK + auth.uid() RLS stubs so the
+      #                           Supabase-flavoured Alembic migrations apply
+      #   10-load-demo-db.sh    — creates the insightai_demo database from the
+      #                           seed below (real data for Chat/Dashboards/Library)
       - ./backend/dev-db-init:/docker-entrypoint-initdb.d:ro
+      - ./backend/seed_demo_db.sql:/seed/seed_demo_db.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U insightai"]
+      # Not "ready" until the one-time init (incl. the ~20s demo-DB seed) is done,
+      # so the backend doesn't start against a half-initialised server.
+      test: ["CMD-SHELL", "pg_isready -U insightai && psql -U insightai -lqt | cut -d'|' -f1 | grep -qw insightai_demo"]
       interval: 5s
-      timeout: 3s
-      retries: 10
+      timeout: 5s
+      retries: 40
+      start_period: 40s
 
   backend:
     env_file:

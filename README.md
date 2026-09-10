@@ -271,7 +271,9 @@ Just want to try it? This runs the entire stack against a throwaway local Postgr
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
-Open **http://localhost:5173** — you're logged in as the dev user immediately. Everything deterministic works: the full **Insight Studio** workflow (profiling, quality, cleaning, EDA, AutoML, reports), dashboards, connections, and the query library. AI chat and *Ask InsightAI* narration light up if you add a `GEMINI_API_KEY` to `backend/.env.dev`. See [`DATA_SCIENCE.md`](DATA_SCIENCE.md) for the Data Science workflow.
+Open **http://localhost:5173** — you're logged in as the dev user immediately. On first run it also seeds a **demo analytics database** (`insightai_demo` — e-commerce / HR / projects / support, ~25 tables) and auto-connects it, so **Chat, Dashboards, Library and Analytics have real data to work with** and don't sit empty. The full **Insight Studio** workflow (profiling, quality, cleaning, EDA, AutoML, reports) works regardless. AI chat and *Ask InsightAI* narration light up once you add a `GEMINI_API_KEY` to `backend/.env.dev` (or a gitignored `backend/.env.dev.local`). See [`DATA_SCIENCE.md`](DATA_SCIENCE.md) for the Data Science workflow.
+
+> The demo DB is created only on a **fresh** database volume. If you've run the stack before, reset it first: `docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v`
 
 ### 🐳 Quick start with Docker (recommended)
 
