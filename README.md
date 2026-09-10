@@ -2,9 +2,7 @@
 
 **AI-Powered Data Intelligence, Smart Data Cleaning, Exploratory Analysis & AutoML.**
 
-Ask your database questions in plain English and get SQL, results, charts, and dashboards back in seconds — then send any result into a full **Data Science workspace** for profiling, quality analysis, smart cleaning, EDA, and real machine-learning models.
-
-> InsightAI evolved from **InsightAI**, an AI-powered database-analytics platform. InsightAI's entire feature set — the LangGraph database agent, NL→SQL, dashboards, query library, scheduling — is intact. Everything under **Insight Studio** below is the new Data Intelligence layer built on top of it.
+Ask your database questions in plain English and get SQL, results, charts, and dashboards back in seconds — then send any result into a full **Data Science workspace** for profiling, quality analysis, smart cleaning, EDA, and real machine-learning models. One platform, one login: an AI database analyst and an end-to-end data-science studio.
 
 <p align="left">
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
@@ -26,19 +24,13 @@ Ask your database questions in plain English and get SQL, results, charts, and d
 
 ---
 
-## 🎥 Demo Video
-
-▶️ **[Watch the full product demo](https://youtu.be/X7novGZY15E)** — natural-language questions turning into SQL, live results, auto-selected charts, saved queries, and dashboards.
-
----
-
 ## 💡 What is InsightAI?
 
-InsightAI is a **full-stack AI Data Intelligence platform** that connects databases and query results to intelligent data profiling, automated data cleaning, exploratory analysis, machine learning, predictive insights, dashboards, and natural-language analytics.
+InsightAI is a **full-stack AI Data Intelligence platform** that connects databases and datasets to intelligent data profiling, automated data cleaning, exploratory analysis, machine learning, predictive insights, dashboards, and natural-language analytics. It has two sides that share one backend, one frontend, and one auth layer:
 
-**The BI half (from InsightAI):** connect a real database, type a question like *"How many support tickets are there per category, broken down by priority?"*, and a **tool-calling LangGraph agent** explores your schema, writes the SQL, validates it, runs it safely (read-only), and hands back the answer with an explanation, a results table, and an automatically chosen chart. Under the hood: a 12-tool agent loop with budget enforcement, context compaction, error-recovery ladders, and a deterministic fallback pipeline.
+**The AI database analyst.** Connect a PostgreSQL database, type a question like *"How many support tickets are there per category, broken down by priority?"*, and a **tool-calling LangGraph agent** explores your schema, writes the SQL, validates it, runs it read-only, and hands back the answer with an explanation, a results table, and an automatically chosen chart. Under the hood: a 13-tool agent loop with budget enforcement, context compaction, error-recovery ladders, and a deterministic fallback pipeline. Results pin to drag-and-drop dashboards or save to a scheduled query library.
 
-**The Data Science half (Insight Studio):** click **Analyze Dataset** on any query result and step through a guided workflow — **Dataset → Quality → Clean → Explore → ML → Report**. It profiles the data, scores its quality, recommends (never blindly applies) cleaning operations with a before/after preview and undo history, runs EDA with grounded insights, and trains and compares real scikit-learn models with leakage-safe preprocessing, feature importance, and a live prediction form.
+**The Data Science studio — Insight Studio.** Bring in a query result, a CSV / TSV / XLSX upload, a database table, or the built-in demo dataset, then step through a guided workflow — **Dataset → Quality → Clean → Explore → ML → Report**. It profiles the data, scores its quality, recommends (never blindly applies) cleaning operations with a before/after preview and undo history, runs EDA with grounded insights, and trains and compares real scikit-learn models with leakage-safe preprocessing, feature importance, and a live prediction form.
 
 ### The AI principle
 
@@ -54,7 +46,7 @@ Getting an answer out of a database normally requires you to:
 4. Interpret raw rows into something a human can act on
 5. Rebuild the same reports over and over
 
-InsightAI collapses all five steps into a single conversation, while keeping everything **auditable** — every agent step (schema search, table inspection, validation, execution) is traceable in the UI via "Show Agent Steps." From there, one click sends the result into Insight Studio for cleaning, EDA, and modelling.
+InsightAI collapses all five steps into a single conversation, while keeping everything **auditable** — every agent step (schema search, table inspection, validation, execution) is traceable in the UI via "Show Agent Steps." From there, one click sends the result into Insight Studio for cleaning, EDA, and modelling, or you upload a file and start there directly.
 
 ---
 
@@ -131,7 +123,7 @@ Start from any of four sources — a **query result** (one click from chat), a *
 
 **Ask InsightAI** answers natural-language questions ("What should I clean first?", "Which model performed best and why?") grounded strictly in the session's computed artifacts. If the LLM is unavailable the panel degrades gracefully — the computed analysis on the page stays accurate.
 
-**Pin to dashboard** — the quality-score breakdown, model comparison, feature importance, and EDA numeric summary each pin to any existing dashboard as a native widget (reusing InsightAI's widget system, drag-and-drop grid, and chart switching).
+**Pin to dashboard** — the quality-score breakdown, model comparison, feature importance, and EDA numeric summary each pin to any existing dashboard as a native widget, using the same drag-and-drop grid and per-widget chart switching as the rest of the app.
 
 A safe, clearly-labelled **demo dataset** (employee attrition, seeded with missing values, duplicates, inconsistent categories, and salary outliers) lets you try the whole workflow without connecting a database.
 
@@ -141,7 +133,7 @@ A safe, clearly-labelled **demo dataset** (employee attrition, seeded with missi
 
 | Area | What you get |
 |------|--------------|
-| **AI Agent** | Tool-calling LangGraph agent with 12 tools: schema search, table inspection, relationship discovery, data profiling, row counting, SQL validation, live preview queries, and more |
+| **AI Agent** | Tool-calling LangGraph agent with 13 tools: schema search, table inspection, relationship discovery, data profiling, row counting, SQL validation, live preview queries, and more |
 | **Data profiling** | Deterministic pandas/numpy profiling — dataset- and column-level stats, type inference, constant/near-constant/high-cardinality detection |
 | **Data quality** | 7 issue detectors + an explainable 0–100 quality score with per-dimension breakdown; every figure computed, not estimated |
 | **Smart cleaning** | AI recommendations with reasons, dry-run preview with before/after + column diff, Smart-Clean auto-apply for low-risk fixes, exact undo/reset history; source database never modified |
@@ -173,8 +165,8 @@ flowchart LR
     SVC --> WORKERS[Celery Workers]
     SVC --> DS[Data Science Engine]
 
-    DS --> PANDAS[pandas / numpy / scikit-learn]
-    DS --> LLMX[LLM: explanation layer only]
+    DS --> PANDAS[pandas / numpy / scikit-learn / DuckDB]
+    DS --> LLMX[LLM: explanation + NL-to-SQL only]
     AGENT --> LLM[Gemini / Groq via LangChain]
     PIPE --> LLM
     LLMX --> LLM
@@ -204,11 +196,13 @@ backend/app/
   db/             # ORM models, repositories, session management
   services/       # chat, connections, library, dashboards, billing, auth,
                   #   data_science_service (in-memory analysis sessions)
-  agents/         # db_agent (tool-calling loop), nl_to_sql, visualization
-  data_science/   # profiling, quality, cleaning, eda, ml, report, demo_data,
-                  #   insights_llm — deterministic pandas/numpy/sklearn engine
-  integrations/   # LLM client (Gemini/Groq), Supabase
-  query_engine/   # execution, schema inspection, safety wrapping
+  agents/         # db_agent (tool-calling loop), nl_to_sql, visualization,
+                  #   dashboard_planner, insights
+  data_science/   # dataset, profiling, quality, cleaning, eda, ml, nl_query,
+                  #   report, demo_data, insights_llm — deterministic
+                  #   pandas/numpy/sklearn/duckdb engine
+  integrations/   # LLM client (Gemini/Groq/OpenAI), Supabase auth
+  query_engine/   # execution, safety, schema inspection, connection pooling
   workers/        # Celery app, beat scheduler, background jobs
 ```
 
@@ -228,7 +222,8 @@ POST /api/data-science/sessions/{id}/eda
 POST /api/data-science/sessions/{id}/ml/detect-task | train | predict
 GET  /api/data-science/sessions/{id}/ml/model    # download trained pipeline (.joblib)
 POST /api/data-science/sessions/{id}/report
-POST /api/data-science/sessions/{id}/ask
+POST /api/data-science/sessions/{id}/ask         # grounded narrative answer
+POST /api/data-science/sessions/{id}/query       # natural-language SQL over the dataset (DuckDB, read-only)
 ```
 
 ---
@@ -244,7 +239,7 @@ POST /api/data-science/sessions/{id}/ask
 | **Data & Auth** | Supabase (Postgres + JWT auth), SQLAlchemy, psycopg2 |
 | **Query Execution** | SQLAlchemy engines per connection, SSH tunneling, schema introspection |
 | **Background Jobs** | Celery, Redis, Celery Beat |
-| **Testing** | Pytest — 460+ backend tests covering agent budgets, compaction, tools, safety, repositories, provider switching, and the full Data Science engine + API |
+| **Testing** | Pytest — 480+ backend tests covering agent budgets, compaction, tools, safety, repositories, provider switching, and the full Data Science engine + API |
 
 ---
 
@@ -271,7 +266,7 @@ Just want to try it? This runs the entire stack against a throwaway local Postgr
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
-Open **http://localhost:5173** — you're logged in as the dev user immediately. On first run it also seeds a **demo analytics database** (`insightai_demo` — e-commerce / HR / projects / support, ~25 tables) and auto-connects it, so **Chat, Dashboards, Library and Analytics have real data to work with** and don't sit empty. The full **Insight Studio** workflow (profiling, quality, cleaning, EDA, AutoML, reports) works regardless. AI chat and *Ask InsightAI* narration light up once you add a `GEMINI_API_KEY` to `backend/.env.dev` (or a gitignored `backend/.env.dev.local`). See [`DATA_SCIENCE.md`](DATA_SCIENCE.md) for the Data Science workflow.
+Open **http://localhost:5173** — you're logged in as the dev user immediately. On first run it also seeds a **demo analytics database** (`insightai_demo` — e-commerce / HR / projects / support, ~33 tables) and auto-connects it, so **Chat, Dashboards, Library and Analytics have real data to work with** and don't sit empty. The full **Insight Studio** workflow (profiling, quality, cleaning, EDA, AutoML, reports) works regardless. AI chat and *Ask InsightAI* narration light up once you add a `GEMINI_API_KEY` to `backend/.env.dev` (or a gitignored `backend/.env.dev.local`). See [`DATA_SCIENCE.md`](DATA_SCIENCE.md) for the Data Science workflow.
 
 > The demo DB is created only on a **fresh** database volume. If you've run the stack before, reset it first: `docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v`
 
@@ -354,10 +349,10 @@ App runs at `http://127.0.0.1:5173`.
 APP_ENV=development
 ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174
 
-# LLM provider — gemini or groq
+# LLM provider — gemini, groq, or openai
 LLM_PROVIDER=gemini
 GEMINI_API_KEY=your-gemini-api-key
-GEMINI_MODEL=gemini-2.0-flash
+GEMINI_MODEL=gemini-flash-latest
 AGENT_MODE=tools
 
 # Supabase (auth + app data)
@@ -395,7 +390,7 @@ python -m pytest
 python -m pytest tests/test_data_science_*.py
 ```
 
-The suite covers the agent loop, tool behavior, budget/salvage paths, context compaction, LLM provider switching, SQL safety, schema commands, repositories with multi-user isolation, and API routes. The Data Science suites (`test_data_science_profiling / quality / cleaning / ml / api`) verify computed statistics, deterministic quality scoring, cleaning operations and undo history, classification/regression detection, leakage-safe training, real model metrics, feature importance, and that analysis sessions never mutate a database and stay scoped to their owner.
+The suite covers the agent loop, tool behavior, budget/salvage paths, context compaction, LLM provider switching, SQL safety, schema commands, repositories with multi-user isolation, and API routes. The Data Science suites (`test_data_science_profiling / quality / cleaning / ml / nl_query / api`) verify computed statistics, deterministic quality scoring, cleaning operations and undo history, classification/regression detection, leakage-safe training, real model metrics, feature importance, natural-language query safety (SQL-injection / file-access / `ATTACH` all blocked), and that analysis sessions never mutate a database and stay scoped to their owner.
 
 ---
 
@@ -414,5 +409,5 @@ The suite covers the agent loop, tool behavior, budget/salvage paths, context co
 
 - `backend/app` is the canonical backend package; `backend/main.py` is a thin convenience wrapper.
 - Data Science analysis sessions are held **in memory** — bounded (8 per user, 3-hour TTL), owner-scoped, and never persisted or written back to a database. They do not survive a server restart and are not shared across worker processes; this fits the synchronous single-analyst workflow and keeps the source data untouched.
-- Adding the Data Science layer introduces four backend dependencies: `pandas`, `numpy`, `scikit-learn`, and `openpyxl` (for `.xlsx` uploads) — see `backend/requirements.txt`. `joblib` (model export) ships with scikit-learn. No new environment variables are required — the LLM narration layer reuses the existing `LLM_PROVIDER` / provider-key configuration and degrades gracefully when unavailable.
+- The Data Science layer adds five backend dependencies: `pandas`, `numpy`, `scikit-learn`, `openpyxl` (for `.xlsx` uploads), and `duckdb` (read-only natural-language queries over a dataset) — see `backend/requirements.txt`. `joblib` (model export) ships with scikit-learn. No new environment variables are required — the LLM layer reuses the existing `LLM_PROVIDER` / provider-key configuration and degrades gracefully when unavailable.
 - All demo media lives in the [`demos/`](demos/) folder.
