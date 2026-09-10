@@ -129,10 +129,10 @@ export function MessageBubble({
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           width: 24, height: 24, background: '#1a1a1a', borderRadius: 4,
-          color: '#fff', fontSize: '0.8rem', fontWeight: 900, fontStyle: 'italic',
+          color: '#fff', fontSize: '0.6rem', fontWeight: 900, fontStyle: 'italic', letterSpacing: '-0.04em',
           flexShrink: 0, marginTop: 4
         }}>
-          Q
+          IA
         </div>
 
         <div style={{ fontSize: '1rem', lineHeight: 1.6, color: T.text, fontWeight: 450, flex: 1 }}>

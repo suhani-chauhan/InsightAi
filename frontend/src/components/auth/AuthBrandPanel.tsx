@@ -167,10 +167,10 @@ export function AuthBrandPanel() {
                 flexShrink: 0,
                 fontFamily: L.fontDisplay,
                 fontWeight: 700,
-                fontSize: 13,
+                fontSize: 10,
               }}
             >
-              Q
+              IA
             </span>
             <span
               style={{

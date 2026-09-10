@@ -812,7 +812,7 @@ export function ChatPage() {
 
                 {loading && (
                   <div style={{ padding: '24px 12px', display: 'flex', gap: 14, alignItems: 'center' }}>
-                    <div style={{ width: 20, height: 20, borderRadius: 0, background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.7rem', fontWeight: 900, fontStyle: 'italic' }}>Q</div>
+                    <div style={{ width: 20, height: 20, borderRadius: 0, background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.7rem', fontWeight: 900, fontStyle: 'italic', letterSpacing: '-0.04em' }}>IA</div>
                     <div style={{ fontFamily: T.fontMono, fontSize: '0.72rem', color: T.text3, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                       Starting response…
                     </div>

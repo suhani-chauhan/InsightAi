@@ -66,8 +66,8 @@ export function Sidebar({ sessions, activeSessionId, sessionsState = 'ready', se
       {/* Logo + Active Connection */}
       <div style={{ padding: '24px 20px 10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: T.fontHead, fontWeight: 900, fontSize: '1.4rem', letterSpacing: -0.8, marginBottom: 20, color: '#1a1a1a' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, background: '#1a1a1a', borderRadius: 4, color: '#fff', fontSize: '0.9rem', fontWeight: 900, fontStyle: 'italic' }}>
-            Q
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, background: '#1a1a1a', borderRadius: 4, color: '#fff', fontSize: '0.62rem', fontWeight: 900, fontStyle: 'italic', letterSpacing: '-0.04em' }}>
+            IA
           </div>
           <div style={{ fontStyle: 'italic' }}>
             InsightAI

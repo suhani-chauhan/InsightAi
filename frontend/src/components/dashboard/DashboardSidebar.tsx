@@ -124,15 +124,16 @@ export function DashboardSidebar() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '0.9rem',
+              fontSize: '0.62rem',
+              letterSpacing: '-0.04em',
               color: T.bg,
               fontWeight: 950,
               boxShadow: `4px 4px 0px ${T.accent}`
             }}
           >
-            Q
+            IA
           </div>
-          QUERY<span style={{ color: T.accent }}>MIND</span>
+          Insight<span style={{ color: T.accent }}>AI</span>
         </div>
       </div>
 
