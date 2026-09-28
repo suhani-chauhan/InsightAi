@@ -175,6 +175,8 @@ flowchart LR
 
 The Data Science engine is fully deterministic: `pandas` / `numpy` / `scikit-learn` compute every statistic, cleaning transform, quality score, and model metric. The LLM only receives those computed results and explains them.
 
+For the full system walkthrough — every layer, every request path, the databases, and the design decisions behind them, with diagrams — see [`ARCHITECTURE.html`](ARCHITECTURE.html) (open it in a browser).
+
 ### How a chat request flows
 
 1. **Deterministic shortcuts first** — schema commands like "show all tables" are answered instantly from the cached catalog, with zero LLM calls. Write-intent messages are refused outright.

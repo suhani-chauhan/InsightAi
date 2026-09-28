@@ -1,0 +1,1091 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>InsightAI Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f7f9;
+    --surface: #ffffff;
+    --surface-2: #eef1f4;
+    --ink: #101620;
+    --ink-2: #56616f;
+    --ink-3: #8a94a1;
+    --line: #e0e5ea;
+    --line-strong: #c9d1da;
+    --accent: #0b62b8;
+    --accent-soft: #e4eef8;
+    --compute: #5b45d1;      /* deterministic Python path */
+    --compute-soft: #ebe7fb;
+    --safe: #0c7469;         /* read-only / sandboxed */
+    --warn: #a95b09;         /* ephemeral / caveat */
+    --code-bg: #f0f3f6;
+
+    --maxw: 74ch;
+    --rail: 244px;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0c1016;
+      --surface: #141a22;
+      --surface-2: #1b222c;
+      --ink: #e7edf3;
+      --ink-2: #a3aebb;
+      --ink-3: #6f7b8a;
+      --line: #262f3a;
+      --line-strong: #38434f;
+      --accent: #5aa6ee;
+      --accent-soft: #17293c;
+      --compute: #9d8dff;
+      --compute-soft: #211d3a;
+      --safe: #48c3b4;
+      --warn: #d99748;
+      --code-bg: #10161e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c1016;
+    --surface: #141a22;
+    --surface-2: #1b222c;
+    --ink: #e7edf3;
+    --ink-2: #a3aebb;
+    --ink-3: #6f7b8a;
+    --line: #262f3a;
+    --line-strong: #38434f;
+    --accent: #5aa6ee;
+    --accent-soft: #17293c;
+    --compute: #9d8dff;
+    --compute-soft: #211d3a;
+    --safe: #48c3b4;
+    --warn: #d99748;
+    --code-bg: #10161e;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 28px 120px;
+    display: grid;
+    grid-template-columns: var(--rail) minmax(0, 1fr);
+    gap: 56px;
+  }
+  @media (max-width: 940px) {
+    .wrap { grid-template-columns: 1fr; gap: 0; }
+    .toc { display: none; }
+  }
+
+  /* ---- masthead ---- */
+  header.masthead {
+    grid-column: 1 / -1;
+    padding: 60px 0 34px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 44px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5.4vw, 3.1rem);
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.16rem;
+    color: var(--ink-2);
+    max-width: 60ch;
+    margin: 0;
+  }
+  .meta-row {
+    margin-top: 26px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .chip {
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 4px 11px;
+    color: var(--ink-2);
+    background: var(--surface);
+  }
+
+  /* ---- TOC rail ---- */
+  .toc {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    font-family: var(--sans);
+    font-size: 13.5px;
+    line-height: 1.5;
+    padding-right: 6px;
+  }
+  .toc p {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 10px;
+  }
+  .toc a {
+    display: block;
+    color: var(--ink-2);
+    text-decoration: none;
+    padding: 3px 0 3px 12px;
+    border-left: 2px solid var(--line);
+  }
+  .toc a:hover { color: var(--ink); }
+  .toc a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+
+  main { min-width: 0; }
+
+  section { margin-bottom: 60px; scroll-margin-top: 24px; }
+  h2 {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 1.62rem;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    margin: 0 0 6px;
+    text-wrap: balance;
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+  }
+  h2 .num {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1.12rem;
+    margin: 34px 0 8px;
+    letter-spacing: -0.005em;
+  }
+  .section-lede {
+    color: var(--ink-2);
+    margin: 0 0 8px 0;
+    max-width: var(--maxw);
+  }
+  p, li { max-width: var(--maxw); }
+  main p { margin: 14px 0; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+  code, .mono {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.08em 0.4em;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  ul, ol { padding-left: 1.3em; }
+  li { margin: 7px 0; }
+  li::marker { color: var(--ink-3); }
+
+  strong { font-weight: 600; color: var(--ink); }
+  .serif-em { font-style: italic; }
+
+  /* ---- callout ---- */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    padding: 16px 20px;
+    margin: 22px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.96rem;
+  }
+  .callout.compute { border-left-color: var(--compute); }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout .k {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .callout.compute .k { color: var(--compute); }
+  .callout.warn .k { color: var(--warn); }
+
+  /* ---- tables ---- */
+  .tablewrap { overflow-x: auto; margin: 22px 0; border: 1px solid var(--line); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; font-family: var(--sans); font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line-strong);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td .mono, td code { white-space: normal; word-break: break-word; }
+  td:first-child { color: var(--ink); font-weight: 500; }
+  .num-col { font-variant-numeric: tabular-nums; }
+
+  /* ---- figure / svg ---- */
+  figure {
+    margin: 30px 0;
+    padding: 22px 20px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  figure svg { width: 100%; height: auto; display: block; color: var(--ink); }
+  figcaption {
+    font-family: var(--sans);
+    font-size: 12.5px;
+    color: var(--ink-2);
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    max-width: none;
+  }
+  .diagram-legend {
+    display: flex; flex-wrap: wrap; gap: 6px 18px;
+    font-family: var(--mono); font-size: 11px; color: var(--ink-2);
+    margin-top: 10px;
+  }
+  .diagram-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 22px; height: 3px; display: inline-block; }
+
+  /* svg helpers via classes on shapes */
+  .n-fill { fill: var(--surface-2); }
+  .n-stroke { stroke: var(--line-strong); }
+  .lbl { fill: var(--ink); font-family: "IBM Plex Sans", sans-serif; font-size: 12px; }
+  .lbl-sm { fill: var(--ink-2); font-family: "IBM Plex Mono", monospace; font-size: 10.5px; }
+  .lbl-title { fill: var(--ink); font-family: "IBM Plex Sans", sans-serif; font-size: 12.5px; font-weight: 600; }
+  .flow { stroke: var(--ink-2); stroke-width: 1.4; fill: none; }
+  .flow-accent { stroke: var(--accent); stroke-width: 1.8; fill: none; }
+  .flow-compute { stroke: var(--compute); stroke-width: 1.8; fill: none; }
+  .box-accent { fill: var(--accent-soft); stroke: var(--accent); }
+  .box-compute { fill: var(--compute-soft); stroke: var(--compute); }
+
+  /* ---- file tree ---- */
+  .tree {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.85;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin: 20px 0;
+    overflow-x: auto;
+  }
+  .tree .d { color: var(--accent); }
+  .tree .c { color: var(--ink-3); }
+  .tree .new { color: var(--compute); }
+
+  /* ---- pill row ---- */
+  .kv { display: grid; grid-template-columns: 150px 1fr; gap: 4px 16px; font-size: 0.95rem; margin: 18px 0; }
+  .kv dt { font-family: var(--mono); font-size: 12px; color: var(--ink-2); padding-top: 2px; }
+  .kv dd { margin: 0; }
+
+  /* ---- theme toggle ---- */
+  .theme-toggle {
+    position: fixed; top: 16px; right: 16px; z-index: 50;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    background: var(--surface); color: var(--ink-2);
+    border: 1px solid var(--line-strong); border-radius: 999px;
+    padding: 7px 13px; cursor: pointer;
+  }
+  .theme-toggle:hover { color: var(--ink); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+  footer.end {
+    grid-column: 1 / -1;
+    border-top: 2px solid var(--ink);
+    margin-top: 40px;
+    padding-top: 22px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="tt" aria-label="Toggle colour theme">◐ theme</button>
+
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">System architecture reference</p>
+    <h1>How InsightAI is put together</h1>
+    <p class="standfirst">InsightAI is a full-stack AI data-intelligence platform: natural-language SQL and dashboards on one side, an end-to-end data-science workspace &mdash; profiling, cleaning, EDA and real model training &mdash; on the other. This document walks the whole system: the layers, the request paths, the databases, and the decisions that hold it together.</p>
+    <div class="meta-row">
+      <span class="chip">FastAPI &middot; Python 3.11</span>
+      <span class="chip">React 19 &middot; Vite &middot; TypeScript</span>
+      <span class="chip">LangGraph &middot; Gemini</span>
+      <span class="chip">pandas &middot; scikit-learn &middot; DuckDB</span>
+      <span class="chip">PostgreSQL &middot; SQLAlchemy &middot; Alembic</span>
+      <span class="chip">Celery &middot; Redis</span>
+      <span class="chip">Supabase auth</span>
+      <span class="chip">Docker Compose</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Table of contents">
+    <p>Contents</p>
+    <a href="#what">1 &nbsp;What it is</a>
+    <a href="#stack">2 &nbsp;Technology stack</a>
+    <a href="#overview">3 &nbsp;System overview</a>
+    <a href="#chat">4 &nbsp;A chat request, end to end</a>
+    <a href="#agent">5 &nbsp;The database agent</a>
+    <a href="#engine">6 &nbsp;Query engine &amp; SQL safety</a>
+    <a href="#studio">7 &nbsp;Insight Studio: the DS engine</a>
+    <a href="#nlquery">8 &nbsp;NL query over uploads</a>
+    <a href="#llm">9 &nbsp;The LLM layer</a>
+    <a href="#data">10 &nbsp;Where data lives</a>
+    <a href="#frontend">11 &nbsp;Frontend architecture</a>
+    <a href="#jobs">12 &nbsp;Background jobs</a>
+    <a href="#auth">13 &nbsp;Authentication</a>
+    <a href="#run">14 &nbsp;Running it</a>
+    <a href="#testing">15 &nbsp;Testing</a>
+    <a href="#map">16 &nbsp;Repository map</a>
+    <a href="#principles">17 &nbsp;Design decisions</a>
+  </nav>
+
+  <main>
+
+  <!-- 1 -->
+  <section id="what">
+    <h2><span class="num">01</span>What it is</h2>
+    <p class="section-lede">InsightAI began as <strong>QueryMind</strong>, an AI business-intelligence tool. The data-science workspace was added on top without rewriting the original &mdash; both halves share one backend, one frontend, one auth layer.</p>
+
+    <h3>The two halves</h3>
+    <p><strong>The BI half.</strong> You connect a PostgreSQL database and ask a question in plain English. A tool-calling <strong>LangGraph agent</strong> explores your schema, writes SQL, validates it, runs it read-only, and returns the answer with an explanation, a results table, and an auto-chosen chart. Results can be pinned to drag-and-drop dashboards or saved to a query library and scheduled.</p>
+    <p><strong>The Data Science half &mdash; <span class="serif-em">Insight Studio</span>.</strong> Take any query result, upload a CSV / TSV / XLSX, pick a database table, or load the demo dataset, then step through a guided workflow: <strong>Dataset &rarr; Quality &rarr; Clean &rarr; Explore &rarr; ML &rarr; Report</strong>. It profiles the data, scores its quality, recommends cleaning operations, runs EDA, and trains and compares real scikit-learn models &mdash; with an <em>Ask InsightAI</em> panel that answers questions grounded in what was actually computed.</p>
+
+    <div class="callout compute">
+      <span class="k">The load-bearing principle</span>
+      Every number a user sees &mdash; a mean, a quality score, an F1, a feature importance, a row count &mdash; is computed in Python with pandas / numpy / scikit-learn / DuckDB. The LLM is an <strong>orchestrator and explanation layer</strong>: it decides what to do and puts computed results into words. It never calculates a statistic and never invents a figure. Diagrams in this document mark the deterministic path in <span style="color:var(--compute);font-weight:600">violet</span>.
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section id="stack">
+    <h2><span class="num">02</span>Technology stack</h2>
+    <p class="section-lede">Nothing exotic. Each layer is a widely-used tool doing the job it is known for.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Layer</th><th>Technology</th><th>Role in the system</th></tr></thead>
+        <tbody>
+          <tr><td>Frontend</td><td class="mono">React 19, TypeScript, Vite</td><td>Single-page app; Vite dev server and production static build</td></tr>
+          <tr><td>UI state</td><td class="mono">Zustand, React Context</td><td>Auth context; small stores for settings and the Insight Studio hand-off</td></tr>
+          <tr><td>Charts</td><td class="mono">Recharts</td><td>Chat result charts, dashboard widgets, EDA visualisations</td></tr>
+          <tr><td>Grid</td><td class="mono">react-grid-layout</td><td>Drag-and-drop, resizable dashboard widgets</td></tr>
+          <tr><td>API</td><td class="mono">FastAPI, Pydantic v2, Uvicorn</td><td>Versioned REST under <code>/api</code>; sync route handlers run in the AnyIO worker threadpool</td></tr>
+          <tr><td>Agents</td><td class="mono">LangGraph, LangChain</td><td>The tool-calling database agent and the NL&rarr;SQL fallback graph</td></tr>
+          <tr><td>LLM</td><td class="mono">Google Gemini (default), Groq, OpenAI</td><td>One provider abstraction, switchable by env var; per-user credential modes</td></tr>
+          <tr><td>Data science</td><td class="mono">pandas, numpy, scikit-learn</td><td>Profiling, quality scoring, cleaning transforms, EDA stats, model training</td></tr>
+          <tr><td>In-process SQL</td><td class="mono">DuckDB</td><td>Read-only natural-language queries over an uploaded dataset, file access disabled</td></tr>
+          <tr><td>File parsing</td><td class="mono">openpyxl, joblib</td><td>.xlsx uploads; serialising a trained pipeline for download</td></tr>
+          <tr><td>App database</td><td class="mono">PostgreSQL, SQLAlchemy 2.x, Alembic</td><td>Owner-scoped repositories; migrations run on startup</td></tr>
+          <tr><td>Auth</td><td class="mono">Supabase (JWT), python-jose</td><td>HTTP-only cookie sessions in production; a mock-auth dev mode</td></tr>
+          <tr><td>Background jobs</td><td class="mono">Celery, Redis, Celery Beat</td><td>Scheduled queries, dashboard generation, widget refresh, suggestion generation</td></tr>
+          <tr><td>Secrets</td><td class="mono">cryptography (Fernet)</td><td>Connected-database credentials encrypted at rest</td></tr>
+          <tr><td>Packaging</td><td class="mono">Docker Compose</td><td>Production stack and a zero-setup dev stack</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section id="overview">
+    <h2><span class="num">03</span>System overview</h2>
+    <p class="section-lede">Five tiers. The browser talks only to the FastAPI layer; everything below it &mdash; agents, the query engine, the data-science engine, repositories, workers &mdash; is orchestrated by a thin service layer.</p>
+
+    <figure>
+      <svg viewBox="0 0 820 470" role="img" aria-label="Layered architecture: React frontend calls the FastAPI API layer, which calls a service layer that fans out to the LangGraph agent, the NL-to-SQL pipeline, the query engine, the data-science engine, repositories and Celery workers; the query engine reads connected PostgreSQL databases read-only, repositories persist to the Supabase app database, and the data-science engine runs deterministic Python and only sends computed results to the LLM.">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/>
+          </marker>
+          <marker id="ah-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--compute)"/>
+          </marker>
+        </defs>
+
+        <!-- frontend -->
+        <rect x="270" y="14" width="280" height="44" rx="7" class="box-accent" stroke-width="1.4"/>
+        <text x="410" y="34" text-anchor="middle" class="lbl-title">React 19 SPA</text>
+        <text x="410" y="49" text-anchor="middle" class="lbl-sm">pages &middot; Zustand &middot; Recharts</text>
+
+        <line x1="410" y1="58" x2="410" y2="82" class="flow-accent" marker-end="url(#ah)"/>
+        <text x="420" y="74" class="lbl-sm">HTTPS &middot; cookie JWT</text>
+
+        <!-- api -->
+        <rect x="210" y="84" width="400" height="46" rx="7" class="n-fill n-stroke" stroke-width="1.4"/>
+        <text x="410" y="104" text-anchor="middle" class="lbl-title">FastAPI &mdash; /api/v1 routers</text>
+        <text x="410" y="120" text-anchor="middle" class="lbl-sm">auth &middot; connections &middot; query &middot; chat &middot; dashboards &middot; data-science &middot; settings</text>
+
+        <line x1="410" y1="130" x2="410" y2="152" class="flow" marker-end="url(#ah)"/>
+
+        <!-- service -->
+        <rect x="210" y="154" width="400" height="40" rx="7" class="n-fill n-stroke" stroke-width="1.4"/>
+        <text x="410" y="179" text-anchor="middle" class="lbl-title">Service layer (orchestration)</text>
+
+        <!-- fan out -->
+        <line x1="300" y1="194" x2="150" y2="238" class="flow" marker-end="url(#ah)"/>
+        <line x1="360" y1="194" x2="330" y2="238" class="flow" marker-end="url(#ah)"/>
+        <line x1="460" y1="194" x2="510" y2="238" class="flow-compute" marker-end="url(#ah-c)"/>
+        <line x1="520" y1="194" x2="670" y2="238" class="flow" marker-end="url(#ah)"/>
+
+        <!-- row of engines -->
+        <rect x="40" y="240" width="190" height="70" rx="7" class="n-fill n-stroke" stroke-width="1.4"/>
+        <text x="135" y="263" text-anchor="middle" class="lbl-title">LangGraph DB agent</text>
+        <text x="135" y="279" text-anchor="middle" class="lbl-sm">13 tools &middot; budget &middot; salvage</text>
+        <text x="135" y="295" text-anchor="middle" class="lbl-sm">+ NL&rarr;SQL fallback graph</text>
+
+        <rect x="245" y="240" width="180" height="70" rx="7" class="n-fill n-stroke" stroke-width="1.4"/>
+        <text x="335" y="263" text-anchor="middle" class="lbl-title">Query engine</text>
+        <text x="335" y="279" text-anchor="middle" class="lbl-sm">read-only exec</text>
+        <text x="335" y="295" text-anchor="middle" class="lbl-sm">safety &middot; pooling &middot; schema</text>
+
+        <rect x="440" y="240" width="180" height="70" rx="7" class="box-compute" stroke-width="1.4"/>
+        <text x="530" y="263" text-anchor="middle" class="lbl-title">Data-science engine</text>
+        <text x="530" y="279" text-anchor="middle" class="lbl-sm">profiling &middot; quality &middot; clean</text>
+        <text x="530" y="295" text-anchor="middle" class="lbl-sm">EDA &middot; ML &middot; DuckDB</text>
+
+        <rect x="635" y="240" width="145" height="70" rx="7" class="n-fill n-stroke" stroke-width="1.4"/>
+        <text x="707" y="263" text-anchor="middle" class="lbl-title">Repositories</text>
+        <text x="707" y="279" text-anchor="middle" class="lbl-sm">SQLAlchemy</text>
+        <text x="707" y="295" text-anchor="middle" class="lbl-sm">owner-scoped</text>
+
+        <!-- to data stores -->
+        <line x1="335" y1="310" x2="335" y2="360" class="flow" marker-end="url(#ah)"/>
+        <text x="345" y="338" class="lbl-sm">SELECT only</text>
+        <rect x="230" y="362" width="210" height="44" rx="7" class="n-fill n-stroke" stroke-width="1.4"/>
+        <text x="335" y="382" text-anchor="middle" class="lbl-title">Connected PostgreSQL DBs</text>
+        <text x="335" y="398" text-anchor="middle" class="lbl-sm">the user's own data &mdash; never written</text>
+
+        <line x1="707" y1="310" x2="707" y2="360" class="flow" marker-end="url(#ah)"/>
+        <rect x="600" y="362" width="180" height="44" rx="7" class="n-fill n-stroke" stroke-width="1.4"/>
+        <text x="690" y="382" text-anchor="middle" class="lbl-title">App database (Postgres)</text>
+        <text x="690" y="398" text-anchor="middle" class="lbl-sm">users, connections, chats, dashboards</text>
+
+        <!-- compute to LLM -->
+        <line x1="530" y1="310" x2="530" y2="360" class="flow-compute" marker-end="url(#ah-c)"/>
+        <text x="540" y="332" class="lbl-sm" fill="var(--compute)">computed</text>
+        <text x="540" y="345" class="lbl-sm" fill="var(--compute)">results only</text>
+        <rect x="460" y="362" width="120" height="44" rx="7" class="n-fill" stroke="var(--compute)" stroke-width="1.4"/>
+        <text x="520" y="382" text-anchor="middle" class="lbl-title">LLM</text>
+        <text x="520" y="398" text-anchor="middle" class="lbl-sm">explains</text>
+
+        <!-- workers / redis -->
+        <line x1="520" y1="194" x2="520" y2="214" class="flow" marker-end="url(#ah)"/>
+        <rect x="40" y="330" width="170" height="44" rx="7" class="n-fill n-stroke" stroke-width="1.4"/>
+        <text x="125" y="350" text-anchor="middle" class="lbl-title">Celery workers</text>
+        <text x="125" y="366" text-anchor="middle" class="lbl-sm">3 pools + Beat</text>
+        <line x1="125" y1="240" x2="125" y2="330" class="flow" stroke-dasharray="4 4" marker-end="url(#ah)"/>
+        <rect x="40" y="392" width="170" height="40" rx="7" class="n-fill n-stroke" stroke-width="1.4"/>
+        <text x="125" y="416" text-anchor="middle" class="lbl-title">Redis</text>
+        <line x1="125" y1="374" x2="125" y2="392" class="flow" stroke-dasharray="4 4" marker-end="url(#ah)"/>
+        <text x="220" y="415" class="lbl-sm">broker + run-event streams + cache</text>
+      </svg>
+      <figcaption>The browser only ever calls the FastAPI layer. A thin service layer decides which engine handles a request. The query engine is the <em>only</em> path to a connected database and it runs every statement read-only. The data-science engine sends the LLM <em>computed results</em>, never raw data to be analysed.</figcaption>
+      <div class="diagram-legend">
+        <span><span class="swatch" style="background:var(--ink-2)"></span> control / data flow</span>
+        <span><span class="swatch" style="background:var(--compute)"></span> deterministic Python &rarr; LLM explains</span>
+        <span><span class="swatch" style="background:var(--ink-2);opacity:.5"></span> via Redis (async)</span>
+      </div>
+    </figure>
+
+    <h3>Backend package layout</h3>
+    <p>Everything lives under <code>backend/app/</code>, split by responsibility rather than by feature:</p>
+    <div class="kv">
+      <dt>api/v1</dt><dd>Route modules, Pydantic request/response schemas, shared dependencies (<code>CurrentUserDep</code>, rate limiting).</dd>
+      <dt>services/</dt><dd>~35 modules that orchestrate a request &mdash; <code>chat_service</code>, <code>connection_service</code>, <code>dashboard_service</code>, <code>data_science_service</code>, &hellip; Held as module-level singletons wired through <code>container.py</code>.</dd>
+      <dt>agents/</dt><dd><code>db_agent</code> (the tool-calling loop), <code>nl_to_sql</code> (the fallback graph), <code>visualization</code>, <code>dashboard_planner</code>, <code>insights</code>. Prompts are markdown files next to the code.</dd>
+      <dt>data_science/</dt><dd>The deterministic DS engine &mdash; <code>dataset</code>, <code>profiling</code>, <code>quality</code>, <code>cleaning</code>, <code>eda</code>, <code>ml</code>, <code>nl_query</code>, <code>report</code>, <code>demo_data</code>, and <code>insights_llm</code> (the only LLM-touching module).</dd>
+      <dt>query_engine/</dt><dd><code>executor</code>, <code>safety</code>, <code>schema_inspector</code>, <code>connection_pool</code>, <code>connection_scope</code>, TLS handling.</dd>
+      <dt>db/</dt><dd>SQLAlchemy ORM models, owner-scoped repositories, session helpers; Alembic migrations sit in <code>backend/alembic/versions</code>.</dd>
+      <dt>integrations/</dt><dd><code>llm_client</code> (the provider abstraction + metering) and the Supabase auth adapter.</dd>
+      <dt>workers/</dt><dd>The Celery app, Beat schedule, and one module per job type.</dd>
+      <dt>core/</dt><dd>Config, secrets, logging, CORS, error handling, metrics.</dd>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section id="chat">
+    <h2><span class="num">04</span>A chat request, end to end</h2>
+    <p class="section-lede">The single most important path in the BI half. It shows how the agent, the query engine, and the visualisation step connect.</p>
+
+    <figure>
+      <svg viewBox="0 0 820 300" role="img" aria-label="A chat question flows from the React chat page to POST /api/chat, through the chat service which runs input guards and builds schema-grounded context, into the LangGraph agent loop which iterates think, call tool, observe against the query engine; the agent proposes SQL, the query engine validates and runs it read-only against the connected database, results return to a visualization step that picks a chart, and the persisted answer plus trace stream back to the browser via a Redis run-event stream.">
+        <defs>
+          <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker>
+        </defs>
+        <!-- steps left to right, two rows -->
+        <rect x="10" y="24" width="120" height="52" rx="6" class="box-accent" stroke-width="1.3"/>
+        <text x="70" y="46" text-anchor="middle" class="lbl-title">Chat page</text>
+        <text x="70" y="62" text-anchor="middle" class="lbl-sm">POST /api/chat</text>
+
+        <line x1="130" y1="50" x2="162" y2="50" class="flow" marker-end="url(#ah2)"/>
+
+        <rect x="164" y="18" width="150" height="64" rx="6" class="n-fill n-stroke" stroke-width="1.3"/>
+        <text x="239" y="38" text-anchor="middle" class="lbl-title">chat_service</text>
+        <text x="239" y="54" text-anchor="middle" class="lbl-sm">input guard (no secrets,</text>
+        <text x="239" y="68" text-anchor="middle" class="lbl-sm">no write intent)</text>
+
+        <line x1="314" y1="50" x2="346" y2="50" class="flow" marker-end="url(#ah2)"/>
+
+        <rect x="348" y="18" width="150" height="64" rx="6" class="n-fill n-stroke" stroke-width="1.3"/>
+        <text x="423" y="38" text-anchor="middle" class="lbl-title">grounding</text>
+        <text x="423" y="54" text-anchor="middle" class="lbl-sm">schema catalog +</text>
+        <text x="423" y="68" text-anchor="middle" class="lbl-sm">semantic context</text>
+
+        <line x1="498" y1="50" x2="530" y2="50" class="flow" marker-end="url(#ah2)"/>
+
+        <rect x="532" y="10" width="278" height="90" rx="6" class="n-fill" stroke="var(--accent)" stroke-width="1.6"/>
+        <text x="671" y="30" text-anchor="middle" class="lbl-title">LangGraph agent loop</text>
+        <text x="671" y="47" text-anchor="middle" class="lbl-sm">think &rarr; call tool &rarr; observe</text>
+        <text x="671" y="63" text-anchor="middle" class="lbl-sm">list_tables &middot; get_table_schema &middot; validate_sql</text>
+        <text x="671" y="79" text-anchor="middle" class="lbl-sm">execute_sql &middot; get_relationships &middot; profile_table</text>
+        <text x="671" y="94" text-anchor="middle" class="lbl-sm">under a call + wall-clock budget</text>
+
+        <!-- down to query engine -->
+        <line x1="671" y1="100" x2="671" y2="140" class="flow" marker-end="url(#ah2)"/>
+        <text x="681" y="124" class="lbl-sm">candidate SQL</text>
+
+        <rect x="540" y="142" width="262" height="58" rx="6" class="n-fill n-stroke" stroke-width="1.3"/>
+        <text x="671" y="164" text-anchor="middle" class="lbl-title">Query engine</text>
+        <text x="671" y="180" text-anchor="middle" class="lbl-sm">validate &rarr; SET TRANSACTION READ ONLY</text>
+        <text x="671" y="194" text-anchor="middle" class="lbl-sm">statement_timeout &middot; row-limit wrap</text>
+
+        <line x1="671" y1="200" x2="671" y2="228" class="flow" marker-end="url(#ah2)"/>
+        <rect x="560" y="230" width="222" height="40" rx="6" class="n-fill n-stroke" stroke-width="1.3"/>
+        <text x="671" y="255" text-anchor="middle" class="lbl-title">Connected PostgreSQL database</text>
+
+        <!-- results back to viz -->
+        <line x1="540" y1="171" x2="360" y2="171" class="flow" marker-end="url(#ah2)"/>
+        <rect x="196" y="142" width="160" height="58" rx="6" class="n-fill n-stroke" stroke-width="1.3"/>
+        <text x="276" y="164" text-anchor="middle" class="lbl-title">visualization agent</text>
+        <text x="276" y="180" text-anchor="middle" class="lbl-sm">picks bar / line / pie /</text>
+        <text x="276" y="194" text-anchor="middle" class="lbl-sm">KPI from the shape</text>
+
+        <line x1="196" y1="171" x2="150" y2="171" class="flow" marker-end="url(#ah2)"/>
+        <rect x="10" y="142" width="138" height="58" rx="6" class="box-accent" stroke-width="1.3"/>
+        <text x="79" y="164" text-anchor="middle" class="lbl-title">Answer + trace</text>
+        <text x="79" y="180" text-anchor="middle" class="lbl-sm">persisted, then</text>
+        <text x="79" y="194" text-anchor="middle" class="lbl-sm">streamed via Redis</text>
+      </svg>
+      <figcaption>Deterministic shortcuts run first: &ldquo;show all tables&rdquo; is answered from the cached schema catalog with zero LLM calls, and any write-intent message is refused at the guard. Only then does the agent loop start.</figcaption>
+    </figure>
+
+    <ol>
+      <li><strong>Guard.</strong> <code>chat_input_guard</code> rejects messages that contain credentials or ask for <code>INSERT/UPDATE/DELETE/DROP</code>.</li>
+      <li><strong>Ground.</strong> <code>chat_intent_orchestrator</code> loads the connection's cached schema catalog and any semantic definitions, and assembles conversation history and prior-result context.</li>
+      <li><strong>Agent loop.</strong> The LangGraph agent iterates <em>think &rarr; call tool &rarr; observe</em>, exploring schema and validating SQL, under a tool-call budget and a wall-clock budget.</li>
+      <li><strong>Execute.</strong> Proposed SQL goes through the query engine &mdash; re-validated, wrapped read-only, given a statement timeout and a row limit &mdash; then run against the connected database.</li>
+      <li><strong>Visualise.</strong> The visualization agent inspects the result columns and picks a chart type.</li>
+      <li><strong>Persist &amp; stream.</strong> The message, SQL, rows, chart spec and full agent trace are saved to the app database; progress and the final answer stream to the browser over a Redis-backed run-event stream (or a Celery worker runs the whole loop when streaming is enabled).</li>
+    </ol>
+
+    <p><strong>When the agent fails</strong> &mdash; budget exhausted, invalid output, repeated tool errors &mdash; a simpler <code>nl_to_sql</code> LangGraph pipeline takes over (schema-prompted generation &rarr; validate &rarr; execute &rarr; one error-correction retry), and the failed agent trace is kept for debugging.</p>
+  </section>
+
+  <!-- 5 -->
+  <section id="agent">
+    <h2><span class="num">05</span>The database agent</h2>
+    <p class="section-lede">A tool-calling loop built on LangGraph, hardened for the reality of messy schemas and imperfect model output.</p>
+
+    <figure>
+      <svg viewBox="0 0 760 250" role="img" aria-label="The agent loop: an LLM step proposes either a tool call or a final answer. A tool call is dispatched to one of the schema, sample, validation or execution tools, its observation is appended to the scratchpad, and control returns to the LLM step. A budget check on every iteration can force an early finish; a salvage step extracts the best answer so far if the final output is invalid.">
+        <defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker></defs>
+        <ellipse cx="130" cy="70" rx="86" ry="34" class="n-fill" stroke="var(--accent)" stroke-width="1.6"/>
+        <text x="130" y="66" text-anchor="middle" class="lbl-title">LLM step</text>
+        <text x="130" y="82" text-anchor="middle" class="lbl-sm">tool call? or answer?</text>
+
+        <line x1="216" y1="70" x2="290" y2="70" class="flow" marker-end="url(#ah3)"/>
+        <text x="252" y="62" text-anchor="middle" class="lbl-sm">tool call</text>
+
+        <rect x="292" y="34" width="200" height="72" rx="6" class="n-fill n-stroke" stroke-width="1.3"/>
+        <text x="392" y="54" text-anchor="middle" class="lbl-title">Dispatch tool</text>
+        <text x="392" y="70" text-anchor="middle" class="lbl-sm">schema / sample /</text>
+        <text x="392" y="84" text-anchor="middle" class="lbl-sm">validate / execute /</text>
+        <text x="392" y="98" text-anchor="middle" class="lbl-sm">count / relationships</text>
+
+        <line x1="492" y1="70" x2="560" y2="70" class="flow" marker-end="url(#ah3)"/>
+        <rect x="562" y="44" width="180" height="52" rx="6" class="n-fill n-stroke" stroke-width="1.3"/>
+        <text x="652" y="66" text-anchor="middle" class="lbl-title">Observation</text>
+        <text x="652" y="82" text-anchor="middle" class="lbl-sm">appended to scratchpad</text>
+
+        <path d="M652 96 C652 150, 130 150, 130 106" class="flow" marker-end="url(#ah3)"/>
+        <text x="392" y="146" text-anchor="middle" class="lbl-sm">loop</text>
+
+        <line x1="130" y1="104" x2="130" y2="176" class="flow" marker-end="url(#ah3)"/>
+        <text x="140" y="150" class="lbl-sm">answer</text>
+        <rect x="40" y="178" width="180" height="52" rx="6" class="box-accent" stroke-width="1.3"/>
+        <text x="130" y="200" text-anchor="middle" class="lbl-title">Finish</text>
+        <text x="130" y="216" text-anchor="middle" class="lbl-sm">valid JSON? else salvage</text>
+
+        <rect x="300" y="170" width="200" height="66" rx="6" class="n-fill" stroke="var(--warn)" stroke-width="1.4"/>
+        <text x="400" y="190" text-anchor="middle" class="lbl-title" fill="var(--warn)">Budget check</text>
+        <text x="400" y="206" text-anchor="middle" class="lbl-sm">max tool calls, wall-clock,</text>
+        <text x="400" y="220" text-anchor="middle" class="lbl-sm">repeated-call ladder &rarr; force finish</text>
+        <line x1="400" y1="170" x2="400" y2="150" class="flow" stroke="var(--warn)" marker-end="url(#ah3)"/>
+      </svg>
+      <figcaption>Resilience is designed in: budgets bound cost, a salvage step turns a half-finished run into a usable answer, and context compaction keeps a long transcript inside the model's window.</figcaption>
+    </figure>
+
+    <h3>The 13 tools</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Tool</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">list_tables</td><td>All tables with row-count estimates</td></tr>
+          <tr><td class="mono">search_schema</td><td>Fuzzy-find tables and columns by keyword</td></tr>
+          <tr><td class="mono">get_table_schema</td><td>Columns, types, keys for one table</td></tr>
+          <tr><td class="mono">get_relationships</td><td>Foreign-key edges between tables</td></tr>
+          <tr><td class="mono">get_sample_values</td><td>A few distinct values from a column</td></tr>
+          <tr><td class="mono">preview_table</td><td>First rows of a table</td></tr>
+          <tr><td class="mono">profile_table</td><td>Null rates, cardinality, basic stats for a table</td></tr>
+          <tr><td class="mono">run_count</td><td>Filtered <code>COUNT(*)</code> with structured predicates</td></tr>
+          <tr><td class="mono">validate_sql</td><td>Parse + safety-check a candidate query without running it</td></tr>
+          <tr><td class="mono">execute_sql</td><td>Run a read-only query (row-capped, timed)</td></tr>
+          <tr><td class="mono">explain_sql</td><td><code>EXPLAIN</code> a query</td></tr>
+          <tr><td class="mono">inspect_previous_result</td><td>Re-read a result from earlier in the conversation</td></tr>
+          <tr><td class="mono">note</td><td>Record a working note for later steps</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Live queries issued <em>by tools</em> (previews, profiles, counts) are separately capped per run, so the agent can't turn exploration into a workload.</p>
+  </section>
+
+  <!-- 6 -->
+  <section id="engine">
+    <h2><span class="num">06</span>Query engine &amp; SQL safety</h2>
+    <p class="section-lede">Every statement that reaches a connected database goes through one function, and defense is layered so no single check is load-bearing.</p>
+    <ul>
+      <li><strong>Write-intent detection</strong> at the chat boundary rejects mutation requests before any model call.</li>
+      <li><strong>Static validation</strong> parses the SQL (sqlglot) and rejects non-<code>SELECT</code> statements, multiple statements, and dangerous constructs.</li>
+      <li><strong>Transaction-level read-only.</strong> On PostgreSQL the executor issues <code>SET TRANSACTION READ ONLY</code> and rolls back at the end &mdash; the database itself refuses writes even if a check were bypassed.</li>
+      <li><strong>Statement timeout</strong> (<code>SET statement_timeout</code>) and an <strong>automatic row-limit wrap</strong> bound every result.</li>
+      <li><strong>Connection scope.</strong> A connection can be restricted to named schemas/tables; queries referencing anything outside the scope are rejected (<code>connection_scope</code>).</li>
+      <li><strong>Credential encryption.</strong> Connected-database passwords are encrypted with a Fernet key before they touch the app database; TLS material is written to a locked-down temp dir.</li>
+      <li><strong>Pooling.</strong> One SQLAlchemy engine is cached per connection; schema introspection is cached and invalidated on drift (a &ldquo;table not found&rdquo; error triggers a refresh + &ldquo;did you mean&rdquo; suggestion).</li>
+    </ul>
+  </section>
+
+  <!-- 7 -->
+  <section id="studio">
+    <h2><span class="num">07</span>Insight Studio: the data-science engine</h2>
+    <p class="section-lede">A guided pipeline over a bounded, in-memory <em>analysis copy</em> of a dataset. The source database is only ever read.</p>
+
+    <figure>
+      <svg viewBox="0 0 820 220" role="img" aria-label="The Insight Studio pipeline: one of four sources (query result, file upload, database table, demo) creates an analysis session holding a pandas DataFrame. The session flows through profiling, the quality engine and score, the cleaning engine with recommendations and an undo history, the EDA engine, and the AutoML engine that trains and compares scikit-learn models. Every stage computes in Python and passes only computed artifacts to the insights LLM layer, which produces grounded narratives and answers.">
+        <defs><marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--compute)"/></marker>
+        <marker id="ah4b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker></defs>
+
+        <rect x="8" y="20" width="120" height="80" rx="6" class="n-fill n-stroke" stroke-width="1.3"/>
+        <text x="68" y="40" text-anchor="middle" class="lbl-title">Source</text>
+        <text x="68" y="56" text-anchor="middle" class="lbl-sm">query result</text>
+        <text x="68" y="70" text-anchor="middle" class="lbl-sm">CSV / TSV / XLSX</text>
+        <text x="68" y="84" text-anchor="middle" class="lbl-sm">DB table &middot; demo</text>
+
+        <line x1="128" y1="60" x2="158" y2="60" class="flow-compute" marker-end="url(#ah4)"/>
+        <rect x="160" y="24" width="128" height="72" rx="6" class="box-compute" stroke-width="1.4"/>
+        <text x="224" y="46" text-anchor="middle" class="lbl-title">Analysis session</text>
+        <text x="224" y="62" text-anchor="middle" class="lbl-sm">pandas DataFrame</text>
+        <text x="224" y="76" text-anchor="middle" class="lbl-sm">in memory, TTL</text>
+        <text x="224" y="90" text-anchor="middle" class="lbl-sm">owner-scoped</text>
+
+        <!-- stages -->
+        <g>
+          <line x1="288" y1="60" x2="316" y2="60" class="flow-compute" marker-end="url(#ah4)"/>
+          <rect x="318" y="34" width="90" height="52" rx="6" class="box-compute" stroke-width="1.3"/>
+          <text x="363" y="56" text-anchor="middle" class="lbl-title">Profile</text>
+          <text x="363" y="72" text-anchor="middle" class="lbl-sm">stats</text>
+
+          <line x1="408" y1="60" x2="436" y2="60" class="flow-compute" marker-end="url(#ah4)"/>
+          <rect x="438" y="34" width="90" height="52" rx="6" class="box-compute" stroke-width="1.3"/>
+          <text x="483" y="56" text-anchor="middle" class="lbl-title">Quality</text>
+          <text x="483" y="72" text-anchor="middle" class="lbl-sm">score /100</text>
+
+          <line x1="528" y1="60" x2="556" y2="60" class="flow-compute" marker-end="url(#ah4)"/>
+          <rect x="558" y="34" width="90" height="52" rx="6" class="box-compute" stroke-width="1.3"/>
+          <text x="603" y="56" text-anchor="middle" class="lbl-title">Clean</text>
+          <text x="603" y="72" text-anchor="middle" class="lbl-sm">undo/redo</text>
+
+          <line x1="648" y1="60" x2="676" y2="60" class="flow-compute" marker-end="url(#ah4)"/>
+          <rect x="678" y="34" width="60" height="52" rx="6" class="box-compute" stroke-width="1.3"/>
+          <text x="708" y="56" text-anchor="middle" class="lbl-title">EDA</text>
+
+          <line x1="738" y1="60" x2="758" y2="60" class="flow-compute" marker-end="url(#ah4)"/>
+          <rect x="754" y="34" width="58" height="52" rx="6" class="box-compute" stroke-width="1.3"/>
+          <text x="783" y="52" text-anchor="middle" class="lbl-title">ML</text>
+          <text x="783" y="70" text-anchor="middle" class="lbl-sm">+ predict</text>
+        </g>
+
+        <!-- to insights LLM -->
+        <line x1="440" y1="140" x2="440" y2="98" class="flow-compute" marker-end="url(#ah4)"/>
+        <rect x="250" y="142" width="380" height="52" rx="6" class="n-fill" stroke="var(--compute)" stroke-width="1.5"/>
+        <text x="440" y="163" text-anchor="middle" class="lbl-title">insights_llm &mdash; grounded narratives &amp; Ask InsightAI</text>
+        <text x="440" y="180" text-anchor="middle" class="lbl-sm">receives computed artifacts only &middot; &ldquo;use only numbers in the payload&rdquo; &middot; degrades to a deterministic fallback</text>
+      </svg>
+      <figcaption>All six stage boxes are pure Python. The one arrow into the LLM carries a JSON payload of already-computed statistics, quality findings and model metrics &mdash; and even that is optional: with no LLM credential the page still shows every number, just without the prose.</figcaption>
+    </figure>
+
+    <h3>Module by module</h3>
+    <div class="kv">
+      <dt>dataset.py</dt><dd>Wraps a DataFrame with provenance and the single source of truth for column <em>kind</em> (numeric / categorical / datetime / boolean / text). Caps the analysis copy at 50k rows.</dd>
+      <dt>profiling.py</dt><dd>Dataset- and column-level statistics &mdash; missing %, unique %, quantiles, IQR, outlier counts, skew, histograms. Pure pandas/numpy.</dd>
+      <dt>quality.py</dt><dd>Seven issue detectors (missing values, duplicates, numeric/date-as-string, categorical inconsistency, outliers, constant columns, potential target leakage) and a deterministic <strong>0&ndash;100 quality score</strong>: each of seven dimensions starts at 100 and loses points per issue by severity.</dd>
+      <dt>cleaning.py</dt><dd>Eleven operations (trim, standardise categories, to-numeric, to-datetime, drop duplicates/column/rows, impute with mean/median/mode/constant/KNN, handle outliers, group rare categories, map categories). A recommendation engine turns each quality issue into an operation with <em>problem / solution / reason / expected impact</em>. Dry-run preview + exact-snapshot undo/redo.</dd>
+      <dt>eda.py</dt><dd>Numeric and categorical summaries, correlation matrix, seven chart specs, and auto-insights whose every figure is lifted from the computed stats (&ldquo;associated with&rdquo;, never &ldquo;causes&rdquo;).</dd>
+      <dt>ml.py</dt><dd>Task auto-detection; a scikit-learn <code>Pipeline</code> + <code>ColumnTransformer</code> fitted <strong>only on the training split</strong>; 5 classifiers / 6 regressors; stratified split; cross-validation; model comparison ranked by the task-appropriate metric; native or permutation feature importance collapsed to source columns; a prediction that runs inputs back through the exact fitted pipeline; <code>joblib</code> export.</dd>
+      <dt>nl_query.py</dt><dd>Natural-language querying of the dataset via DuckDB &mdash; see &sect;8.</dd>
+      <dt>report.py</dt><dd>Assembles the computed artifacts into an executive summary plus sections; exported as standalone HTML from the UI.</dd>
+      <dt>insights_llm.py</dt><dd>The only module that calls the LLM. Wraps every call so the feature degrades to a deterministic fallback if the model or a credential is unavailable.</dd>
+    </div>
+
+    <div class="callout warn">
+      <span class="k">Deliberate trade-off</span>
+      Analysis sessions live <strong>in process memory</strong> &mdash; bounded (8 per user, 3-hour TTL), owner-scoped, never persisted, never written back to a database. They don't survive a restart and aren't shared across worker processes. This fits the synchronous single-analyst workflow and keeps the source data untouched; the alternative (a per-user scratch database) was more infrastructure than the feature warranted.
+    </div>
+    <p>The service layer (<code>data_science_service.py</code>) owns the session store and orchestration; the routes under <code>/api/data-science/*</code> are all owner-scoped through <code>CurrentUserDep</code> and run as sync handlers in the threadpool because the ML work is CPU-bound.</p>
+  </section>
+
+  <!-- 8 -->
+  <section id="nlquery">
+    <h2><span class="num">08</span>Natural-language query over an upload</h2>
+    <p class="section-lede">Chat needs a connected SQL database. To let people ask questions of an <em>uploaded file</em>, Insight Studio runs a small, sandboxed query path of its own.</p>
+
+    <figure>
+      <svg viewBox="0 0 780 190" role="img" aria-label="A data question in the Ask InsightAI panel that matches a data-shaped pattern is sent to the query endpoint. The LLM writes one DuckDB SELECT over a table named data. A deterministic validator rejects anything that is not a plain SELECT or WITH, or that contains semicolons, comments, DDL, DML, ATTACH, COPY, read_csv or pragma. The approved SQL runs in an in-process DuckDB connection with external file and network access disabled, over the session DataFrame, and returns SQL plus a capped result table.">
+        <defs><marker id="ah5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--ink-2)"/></marker>
+        <marker id="ah5s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--safe)"/></marker></defs>
+        <rect x="8" y="60" width="120" height="56" rx="6" class="n-fill n-stroke" stroke-width="1.3"/>
+        <text x="68" y="82" text-anchor="middle" class="lbl-title">Ask panel</text>
+        <text x="68" y="98" text-anchor="middle" class="lbl-sm">data-shaped Q?</text>
+
+        <line x1="128" y1="88" x2="158" y2="88" class="flow" marker-end="url(#ah5)"/>
+        <rect x="160" y="52" width="140" height="72" rx="6" class="n-fill" stroke="var(--accent)" stroke-width="1.4"/>
+        <text x="230" y="74" text-anchor="middle" class="lbl-title">LLM</text>
+        <text x="230" y="90" text-anchor="middle" class="lbl-sm">writes ONE</text>
+        <text x="230" y="104" text-anchor="middle" class="lbl-sm">DuckDB SELECT</text>
+
+        <line x1="300" y1="88" x2="330" y2="88" class="flow" marker-end="url(#ah5)"/>
+        <rect x="332" y="46" width="170" height="84" rx="6" class="n-fill" stroke="var(--warn)" stroke-width="1.5"/>
+        <text x="417" y="66" text-anchor="middle" class="lbl-title" fill="var(--warn)">Validator</text>
+        <text x="417" y="82" text-anchor="middle" class="lbl-sm">SELECT / WITH only</text>
+        <text x="417" y="96" text-anchor="middle" class="lbl-sm">no ; -- DDL DML</text>
+        <text x="417" y="110" text-anchor="middle" class="lbl-sm">no attach / copy / read_csv</text>
+        <text x="417" y="124" text-anchor="middle" class="lbl-sm">no pragma / set / install</text>
+
+        <line x1="502" y1="88" x2="532" y2="88" class="flow-compute" marker-end="url(#ah5s)" stroke="var(--safe)"/>
+        <rect x="534" y="40" width="236" height="96" rx="6" class="n-fill" stroke="var(--safe)" stroke-width="1.6"/>
+        <text x="652" y="60" text-anchor="middle" class="lbl-title" fill="var(--safe)">DuckDB, in-process</text>
+        <text x="652" y="77" text-anchor="middle" class="lbl-sm">enable_external_access = False</text>
+        <text x="652" y="92" text-anchor="middle" class="lbl-sm">table &ldquo;data&rdquo; = session DataFrame</text>
+        <text x="652" y="107" text-anchor="middle" class="lbl-sm">1000-row result cap</text>
+        <text x="652" y="122" text-anchor="middle" class="lbl-sm">&rarr; returns SQL + table</text>
+      </svg>
+      <figcaption>Two independent guarantees: the connection is created with file and network access disabled, <em>and</em> a regex validator rejects the query before it runs. The Ask panel routes analytical questions (&ldquo;what should I clean first?&rdquo;) to the grounded-narrative endpoint and data questions (&ldquo;average revenue by region&rdquo;) here.</figcaption>
+    </figure>
+  </section>
+
+  <!-- 9 -->
+  <section id="llm">
+    <h2><span class="num">09</span>The LLM layer</h2>
+    <p class="section-lede">One abstraction, several providers, per-user credential policy, and a firm rule about what the model is allowed to do.</p>
+    <ul>
+      <li><strong>Provider abstraction.</strong> <code>integrations/llm_client.py</code> exposes <code>get_chat_llm()</code> and <code>invoke_chat_llm()</code> over Gemini (default), Groq and OpenAI. Switching is one env var (<code>LLM_PROVIDER</code>). Response content is normalised through <code>content_to_text()</code> &mdash; Gemini 3.x returns a list of content blocks with thought signatures, not a string.</li>
+      <li><strong>Credential modes.</strong> <code>LLM_CREDENTIAL_MODE</code> is <code>deployment</code> (use the app's key, unmetered), <code>hybrid</code> (app key with a per-user trial limit, then bring-your-own), or <code>byok_required</code>. User keys are stored encrypted and validated on save.</li>
+      <li><strong>Metering.</strong> Every call is wrapped as a metered invocation that records provider, model, token counts, latency and outcome, and maps provider errors to typed application errors (<code>401&rarr;credential_invalid</code>, <code>429&rarr;rate_limited</code>, <code>5xx&rarr;provider_unavailable</code>).</li>
+      <li><strong>Grounding.</strong> In Insight Studio the system prompt is explicit: <em>&ldquo;Use ONLY numbers present in the payload &mdash; never invent or recompute figures. Say &lsquo;associated with&rsquo;, not &lsquo;causes&rsquo;.&rdquo;</em> Every call has a deterministic fallback, so a provider outage never breaks a page.</li>
+      <li><strong>Where the LLM is used:</strong> the chat agent loop and its fallback pipeline; chart-type selection; dashboard planning; per-widget insights; question-suggestion generation; semantic-definition suggestions; and, in Insight Studio, cleaning-recommendation narration, EDA and model narratives, <em>Ask InsightAI</em>, and NL&rarr;SQL for uploads.</li>
+    </ul>
+  </section>
+
+  <!-- 10 -->
+  <section id="data">
+    <h2><span class="num">10</span>Where data lives</h2>
+    <p class="section-lede">Four distinct homes for state, with very different lifetimes and trust levels.</p>
+
+    <figure>
+      <svg viewBox="0 0 800 250" role="img" aria-label="Four data homes. The app database, a PostgreSQL instance migrated by Alembic, holds users, connections with encrypted credentials, chat sessions and messages, dashboards and widgets, the query library, and LLM usage. Connected user databases are external PostgreSQL instances that the query engine only ever reads. In-memory analysis sessions hold pandas DataFrames for Insight Studio, bounded and never persisted. Redis holds the Celery broker, run-event streams, and rate-limit and auth caches.">
+        <rect x="20" y="20" width="230" height="120" rx="8" class="n-fill n-stroke" stroke-width="1.4"/>
+        <text x="135" y="44" text-anchor="middle" class="lbl-title">App database &mdash; PostgreSQL</text>
+        <text x="135" y="63" text-anchor="middle" class="lbl-sm">Supabase in prod / local in dev</text>
+        <text x="135" y="80" text-anchor="middle" class="lbl-sm">Alembic migrations on startup</text>
+        <text x="135" y="97" text-anchor="middle" class="lbl-sm">users &middot; connections (enc.) &middot; chats</text>
+        <text x="135" y="112" text-anchor="middle" class="lbl-sm">dashboards &middot; library &middot; LLM usage</text>
+        <text x="135" y="129" text-anchor="middle" class="lbl-sm">row-level security policies</text>
+
+        <rect x="280" y="20" width="230" height="120" rx="8" class="n-fill" stroke="var(--safe)" stroke-width="1.5"/>
+        <text x="395" y="44" text-anchor="middle" class="lbl-title" fill="var(--safe)">Connected databases</text>
+        <text x="395" y="63" text-anchor="middle" class="lbl-sm">external PostgreSQL, per connection</text>
+        <text x="395" y="80" text-anchor="middle" class="lbl-sm">the user's own data</text>
+        <text x="395" y="97" text-anchor="middle" class="lbl-sm">query engine reads only</text>
+        <text x="395" y="114" text-anchor="middle" class="lbl-sm">READ ONLY txn &middot; timeout &middot; row cap</text>
+        <text x="395" y="131" text-anchor="middle" class="lbl-sm">optional schema/table scope</text>
+
+        <rect x="540" y="20" width="240" height="120" rx="8" class="box-compute" stroke-width="1.5"/>
+        <text x="660" y="44" text-anchor="middle" class="lbl-title">Analysis sessions</text>
+        <text x="660" y="63" text-anchor="middle" class="lbl-sm">pandas DataFrames, in RAM</text>
+        <text x="660" y="80" text-anchor="middle" class="lbl-sm">Insight Studio working copies</text>
+        <text x="660" y="97" text-anchor="middle" class="lbl-sm">8 / user &middot; 3-hour TTL</text>
+        <text x="660" y="114" text-anchor="middle" class="lbl-sm">never persisted or shared</text>
+        <text x="660" y="131" text-anchor="middle" class="lbl-sm">gone on restart</text>
+
+        <rect x="230" y="176" width="340" height="58" rx="8" class="n-fill n-stroke" stroke-width="1.4"/>
+        <text x="400" y="200" text-anchor="middle" class="lbl-title">Redis</text>
+        <text x="400" y="218" text-anchor="middle" class="lbl-sm">Celery broker &middot; chat run-event streams &middot; rate-limit &amp; auth cache</text>
+      </svg>
+      <figcaption>The app database is the system of record. Connected databases are read-only and treated as untrusted input. Analysis sessions are ephemeral by design. Redis is transport and cache, never a source of truth.</figcaption>
+    </figure>
+    <p>In the zero-setup dev stack a fifth database appears: <code>insightai_demo</code>, a ~33-table demo schema (e-commerce / HR / projects / support) seeded on first boot and auto-registered as a connection, so Chat, Dashboards, Library and Analytics have real data without any external account.</p>
+  </section>
+
+  <!-- 11 -->
+  <section id="frontend">
+    <h2><span class="num">11</span>Frontend architecture</h2>
+    <p class="section-lede">A React 19 single-page app. Ten routes, feature-grouped components, a thin service layer over <code>fetch</code>.</p>
+
+    <div class="kv">
+      <dt>Routing</dt><dd><code>react-router-dom</code> v7. Public: <code>/</code> (landing), <code>/auth</code>, <code>/s/:token</code> (shared dashboard). Protected: <code>/chat</code>, <code>/dashboard</code>, <code>/analytics</code>, <code>/library</code>, <code>/connections</code>, <code>/settings</code>, <code>/upgrade</code>, and <code>/insight-studio</code>. A <code>ProtectedRoute</code> wrapper redirects to <code>/auth</code> once auth is resolved and no user is present.</dd>
+      <dt>Auth</dt><dd><code>AuthContext</code> exposes <code>user</code>, <code>loading</code>, <code>isDevMode</code>. In dev mode it short-circuits to a mock user and never calls the auth API.</dd>
+      <dt>State</dt><dd>Zustand for the few pieces of cross-component state: <code>settingsStore</code>, and <code>insightStudioStore</code> which carries the &ldquo;Analyze Dataset&rdquo; hand-off from a chat result (persisted to <code>sessionStorage</code> so it survives the navigation). Everything else is local component state.</dd>
+      <dt>Services</dt><dd><code>services/http.ts</code> wraps <code>fetch</code> with cookie credentials and a one-shot 401&rarr;refresh&rarr;retry. <code>services/api.ts</code> is the typed BI API; <code>services/dataScience.ts</code> is the Insight Studio API, including a binary <code>fetch</code> for the model download.</dd>
+      <dt>Components</dt><dd>Grouped by area: <code>chat/</code>, <code>dashboard/</code>, <code>charts/</code>, <code>connections/</code>, <code>library/</code>, <code>analytics/</code>, <code>settings/</code>, <code>landing/</code>, <code>insight-studio/</code>, plus <code>common/</code> shell components.</dd>
+      <dt>Insight Studio</dt><dd>One page with a six-step nav (<code>StepNav</code>) and per-step panels (<code>DatasetStep</code> &hellip; <code>ReportStep</code>), a Recharts-based <code>DsChart</code> renderer for the EDA chart specs, an <code>AskPanel</code>, a <code>TableSourcePicker</code>, and a <code>PinToDashboardButton</code> that reuses the existing dashboard-widget API.</dd>
+      <dt>Design system</dt><dd>A token file (<code>components/dashboard/tokens.ts</code>) &mdash; warm editorial palette, Playfair Display headings, DM Mono labels, Inter body &mdash; applied via inline styles.</dd>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section id="jobs">
+    <h2><span class="num">12</span>Background jobs</h2>
+    <p class="section-lede">Celery + Redis + Beat. Work that is slow, scheduled, or should not block a request runs here.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Queue / pool</th><th>Jobs</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">default, scheduled,<br>templates, semantics,<br>suggestions</td><td><code>run_saved_query</code> (scheduled query runs), <code>generate_library_templates</code>, <code>suggest_semantics</code>, <code>generate_question_suggestions</code></td></tr>
+          <tr><td class="mono">interactive</td><td><code>run_chat_agent</code> &mdash; the full agent loop, so streaming chat doesn't tie up a web worker</td></tr>
+          <tr><td class="mono">dashboards</td><td><code>plan_dashboard</code>, <code>execute_dashboard_generation</code> (AI dashboard build), <code>refresh_dashboard_widget</code> (scheduled widget refresh)</td></tr>
+          <tr><td class="mono">Beat</td><td>Enqueues scheduled query runs and widget refreshes on their cadence</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Dispatch locks prevent a slow job from being enqueued twice. If Redis is absent in local dev, rate limiting falls back to in-memory and streaming is disabled &mdash; the app still runs.</p>
+  </section>
+
+  <!-- 13 -->
+  <section id="auth">
+    <h2><span class="num">13</span>Authentication</h2>
+    <p class="section-lede">Supabase JWT in production; a mock-auth mode for local development.</p>
+    <ul>
+      <li><strong>Production.</strong> Supabase issues the JWT; the frontend stores it in an <strong>HTTP-only cookie</strong>. Every protected route depends on <code>get_current_user</code>, which verifies the token (HS256 secret or an EC P-256 JWK), checks a local session-revocation table, and confirms the user is active.</li>
+      <li><strong>Dev mode.</strong> With <code>BACKEND_DEV_MODE=true</code> <em>and</em> no <code>SUPABASE_JWT_SECRET</code>, <code>mock_auth_enabled</code> turns on: any request with no token (or the literal <code>dev-token</code>) resolves to a fixed dev user <code>00000000-…-0000</code>. The frontend's <code>VITE_DEV_MODE=true</code> matches this and skips the login screen.</li>
+      <li><strong>Owner scoping.</strong> Every repository filters by <code>owner_id</code> at the data layer; Insight Studio's session store checks <code>session.user_id</code> on every access. The app database also carries Postgres row-level-security policies keyed on <code>auth.uid()</code>.</li>
+      <li>Config refuses to start with <code>BACKEND_DEV_MODE</code> enabled when <code>APP_ENV</code> is production.</li>
+    </ul>
+  </section>
+
+  <!-- 14 -->
+  <section id="run">
+    <h2><span class="num">14</span>Running it</h2>
+    <p class="section-lede">Two Compose files. The production one needs a Supabase project and an LLM key; the dev overlay needs nothing.</p>
+
+    <h3>The stack (8 services)</h3>
+    <div class="kv">
+      <dt>redis</dt><dd>Broker, run-event streams, caches.</dd>
+      <dt>backend</dt><dd>FastAPI + Uvicorn. Runs <code>alembic upgrade head</code> on start, then serves <code>:8000</code>.</dd>
+      <dt>worker / agent-worker / dashboard-worker</dt><dd>Three Celery pools bound to the queues in &sect;12.</dd>
+      <dt>beat</dt><dd>Celery Beat scheduler.</dd>
+      <dt>frontend</dt><dd>Vite build served by nginx on <code>:5173</code>.</dd>
+      <dt>db <span style="color:var(--ink-3)">(dev only)</span></dt><dd>A throwaway PostgreSQL. Two init scripts run once on a fresh volume: <code>00-supabase-shim.sql</code> stubs the <code>auth</code> schema and <code>auth.uid()</code> so the Supabase-flavoured migrations apply on vanilla Postgres, and <code>10-load-demo-db.sh</code> creates and seeds <code>insightai_demo</code>.</dd>
+    </div>
+
+    <div class="callout">
+      <span class="k">Zero-setup dev stack</span>
+      <code>docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build</code> &mdash; local Postgres, local Redis, mock auth, demo data auto-connected. A gitignored <code>backend/.env.dev.local</code> is loaded as an optional second env file for a real <code>GEMINI_API_KEY</code>, so the key never lands in a committed file. Open <code>http://localhost:5173</code> and you're the dev user immediately.
+    </div>
+  </section>
+
+  <!-- 15 -->
+  <section id="testing">
+    <h2><span class="num">15</span>Testing</h2>
+    <p class="section-lede">pytest, ~480 tests. The data-science engine and its API are covered end to end.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Suite</th><th>Covers</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">test_safety, test_sqlalchemy_repositories,<br>test_db_agent_*</td><td>SQL safety, read-only enforcement, owner-scoped repositories, agent budget / compaction / salvage / tools</td></tr>
+          <tr><td class="mono">test_data_science_profiling</td><td>Column classification, computed stats, duplicate and high-cardinality detection, row cap</td></tr>
+          <tr><td class="mono">test_data_science_quality</td><td>Each detector, deterministic and bounded score, clean-vs-messy ordering</td></tr>
+          <tr><td class="mono">test_data_science_cleaning</td><td>Strategy selection, operation results, exact undo/redo/reset, preview immutability</td></tr>
+          <tr><td class="mono">test_data_science_ml</td><td>Task detection, leakage-safe pipeline structure, real metrics, feature importance, prediction, identifier exclusion</td></tr>
+          <tr><td class="mono">test_data_science_nl_query</td><td>Valid queries run; SQL-injection / file-access / <code>ATTACH</code> / comment / <code>COPY</code> all blocked</td></tr>
+          <tr><td class="mono">test_data_science_api</td><td>Routing, auth scoping (user A can't see user B's session), the full demo &rarr; profile &rarr; clean &rarr; EDA &rarr; train &rarr; predict &rarr; report flow, model round-trip through <code>joblib.load</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Two pre-existing failures are environmental (a Groq/Gemini env-var default, and one integration test that needs a live Postgres). The frontend has a Vitest suite and a type-checked production build.</p>
+  </section>
+
+  <!-- 16 -->
+  <section id="map">
+    <h2><span class="num">16</span>Repository map</h2>
+    <p class="section-lede">The parts added for InsightAI are marked <span style="color:var(--compute)">&#9679;</span>; everything else is the original BI platform, intact.</p>
+    <div class="tree">
+<span class="d">backend/app/</span>
+  <span class="d">api/v1/</span>          routes/ &middot; schemas/ &middot; router.py
+    routes/<span class="new">data_science.py</span>   <span class="c"># 18 endpoints under /api/data-science</span>
+  <span class="d">services/</span>
+    chat_service.py &middot; connection_service.py &middot; dashboard_service.py &middot; &hellip;
+    <span class="new">data_science_service.py</span>  <span class="c"># in-memory analysis sessions + orchestration</span>
+  <span class="d">agents/</span>
+    db_agent/         <span class="c"># tool-calling loop: agent.py, tools.py, budget.py, salvage.py</span>
+    nl_to_sql/        <span class="c"># fallback LangGraph pipeline</span>
+    visualization/ &middot; dashboard_planner/ &middot; insights/
+  <span class="d new">data_science/</span>       <span class="c"># the deterministic engine</span>
+    dataset.py &middot; profiling.py &middot; quality.py &middot; cleaning.py &middot; eda.py
+    ml.py &middot; nl_query.py &middot; report.py &middot; demo_data.py &middot; insights_llm.py
+  <span class="d">query_engine/</span>     executor.py &middot; safety.py &middot; schema_inspector.py &middot; connection_pool.py
+  <span class="d">db/</span>               orm_models/ &middot; repositories/ &middot; session.py
+  <span class="d">integrations/</span>     llm_client.py &middot; supabase_auth/
+  <span class="d">workers/</span>          celery_app.py &middot; beat.py &middot; jobs/
+  <span class="d">core/</span>             config.py &middot; secrets.py &middot; errors.py &middot; logging.py
+<span class="d">backend/alembic/versions/</span>   <span class="c"># 22 migrations</span>
+<span class="d">backend/tests/</span>              <span class="c"># pytest, incl. 6 test_data_science_* suites</span>
+<span class="d">backend/dev-db-init/</span>        <span class="new">00-supabase-shim.sql</span> &middot; <span class="new">10-load-demo-db.sh</span>
+
+<span class="d">frontend/src/</span>
+  <span class="d">pages/</span>            ChatPage &middot; DashboardPage &middot; &hellip; &middot; <span class="new">InsightStudioPage</span>
+  <span class="d">components/</span>
+    chat/ &middot; dashboard/ &middot; charts/ &middot; connections/ &middot; library/ &middot; &hellip;
+    <span class="d new">insight-studio/</span>   <span class="c"># StepNav, DatasetStep..ReportStep, DsChart, AskPanel, PinToDashboardButton</span>
+  <span class="d">services/</span>         http.ts &middot; api.ts &middot; <span class="new">dataScience.ts</span>
+  <span class="d">store/</span>            settingsStore.ts &middot; <span class="new">insightStudioStore.ts</span>
+  <span class="d">context/</span>          AuthContext.tsx
+
+<span class="d">docker-compose.yml</span>          <span class="c"># production stack</span>
+<span class="d new">docker-compose.dev.yml</span>      <span class="c"># zero-setup overlay: local db, mock auth, demo data</span>
+<span class="new">DATA_SCIENCE.md</span>             <span class="c"># the Insight Studio workflow, endpoint by endpoint</span>
+    </div>
+  </section>
+
+  <!-- 17 -->
+  <section id="principles">
+    <h2><span class="num">17</span>Design decisions</h2>
+    <p class="section-lede">The calls that shaped the codebase, and why.</p>
+
+    <h3>Extend, don't rewrite</h3>
+    <p>The data-science workspace was added <em>alongside</em> the BI platform. Same FastAPI app, same service/repository pattern, same auth, same React shell, same chart components. The chat agent, dashboards, query library and scheduling are untouched. This kept the diff reviewable and meant no existing capability regressed.</p>
+
+    <h3>Deterministic core, LLM as narrator</h3>
+    <p>Statistics, quality scores, cleaning impact, model metrics and feature importance are computed in Python and only <em>then</em> handed to the model to explain. This removes the entire class of hallucinated-analytics failures, makes results reproducible and testable, and lets every AI feature degrade to a still-accurate fallback when a provider is down.</p>
+
+    <h3>Read-only, everywhere, in layers</h3>
+    <p>A connected database is untrusted input. Write-intent is refused at the chat boundary, SQL is statically validated, the transaction is set read-only, and the connection can be scoped to specific tables. The DuckDB path for uploads is sandboxed the same way &mdash; external access off <em>and</em> a SELECT-only validator. No single check is trusted alone.</p>
+
+    <h3>Ephemeral analysis sessions</h3>
+    <p>Insight Studio holds working data in memory rather than in a scratch database. The cost is that sessions don't survive a restart and aren't shared across workers; the benefit is zero new persistence infrastructure and a guarantee that the source data is never copied into a store. For a synchronous single-analyst workflow that was the right trade.</p>
+
+    <h3>One provider abstraction</h3>
+    <p>Gemini, Groq and OpenAI sit behind a single metered client. Switching is an env var; per-user credential policy (deployment key, hybrid trial, or bring-your-own) is enforced in one place; provider-specific response shapes and error codes are normalised once.</p>
+  </section>
+
+  </main>
+
+  <footer class="end">
+    InsightAI &mdash; architecture reference &middot; generated from the codebase &middot; the deterministic path is drawn in violet throughout.
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('tt');
+    try {
+      var saved = localStorage.getItem('insightai-doc-theme');
+      if (saved) root.setAttribute('data-theme', saved);
+    } catch (e) {}
+    btn.addEventListener('click', function () {
+      var cur = root.getAttribute('data-theme');
+      var next = cur === 'dark' ? 'light' : cur === 'light' ? 'dark'
+        : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark');
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('insightai-doc-theme', next); } catch (e) {}
+    });
+
+    // TOC scroll-spy
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var map = {};
+    links.forEach(function (a) {
+      var id = a.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if (el) map[id] = a;
+    });
+    var sections = Object.keys(map).map(function (id) { return document.getElementById(id); });
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            links.forEach(function (l) { l.classList.remove('active'); });
+            var a = map[en.target.id];
+            if (a) a.classList.add('active');
+          }
+        });
+      }, { rootMargin: '-10% 0px -75% 0px' });
+      sections.forEach(function (s) { io.observe(s); });
+    }
+  })();
+</script>
+</body>
+</html>
+
+</body></html>
