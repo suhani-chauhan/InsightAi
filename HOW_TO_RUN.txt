@@ -1,0 +1,170 @@
+================================================================================
+ InsightAI — How to run this project
+ (every terminal command you need, in order)
+================================================================================
+
+Works from PowerShell, Command Prompt, or Git Bash on Windows. Run all
+commands from the project folder:
+
+    D:\ai data visualization project\insightmind
+
+--------------------------------------------------------------------------------
+ 0) ONE-TIME PREREQUISITE — Docker Desktop
+--------------------------------------------------------------------------------
+Docker is required. Everything else (Python, Node, Postgres, Redis) runs
+inside containers, so you do NOT need to install them yourself.
+
+  1. Install Docker Desktop for Windows (if you don't have it):
+     https://www.docker.com/products/docker-desktop/
+
+  2. Start Docker Desktop and wait until it says "Engine running"
+     (check the whale icon in the system tray). You can verify from a
+     terminal:
+
+         docker version
+
+     If that errors with "cannot connect to the Docker daemon" or a pipe
+     error, Docker Desktop isn't running yet — open it from the Start
+     menu and wait ~30 seconds, then retry.
+
+--------------------------------------------------------------------------------
+ 1) RUN THE PROJECT — zero-setup dev stack (recommended)
+--------------------------------------------------------------------------------
+No Supabase account, no LLM key, no manual database setup needed. On first
+run it seeds a local Postgres, a demo analytics database (~33 tables), and
+logs you in automatically.
+
+  cd "D:\ai data visualization project\insightmind"
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+Wait for the logs to settle (first build takes a few minutes — it installs
+Python + Node dependencies and seeds the demo database). You'll see the
+backend log "Uvicorn running" and the frontend log "ready".
+
+Then open in your browser:
+
+  Frontend (the app):  http://localhost:5173
+  Backend API:          http://localhost:8000
+  API health check:     http://localhost:8000/api/health
+
+You are logged in immediately as the dev user — no signup/login screen.
+Chat, Dashboards, Library, Analytics, and Insight Studio all have real
+demo data to work with right away.
+
+--- Run it in the background instead of watching logs ---
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+
+--------------------------------------------------------------------------------
+ 2) STOP THE PROJECT
+--------------------------------------------------------------------------------
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml down
+
+(Ctrl+C first if you're running it attached/in the foreground, i.e. without
+the -d flag, then run the "down" command above to remove the containers.)
+
+--------------------------------------------------------------------------------
+ 3) RESTART IT LATER (containers already built once)
+--------------------------------------------------------------------------------
+  cd "D:\ai data visualization project\insightmind"
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+--------------------------------------------------------------------------------
+ 4) FULL RESET (wipe the local database and reseed the demo data)
+--------------------------------------------------------------------------------
+Use this if the app misbehaves, or after pulling code changes that touch
+the database schema or demo data.
+
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+(The "-v" also deletes the database volume, so the demo database gets
+recreated from scratch on the next "up". This takes ~30-40 seconds longer.)
+
+--------------------------------------------------------------------------------
+ 5) OPTIONAL — enable AI chat and "Ask InsightAI" narration
+--------------------------------------------------------------------------------
+The app works fully without this (all data profiling, cleaning, EDA, and
+AutoML are deterministic Python — no AI needed). This step only unlocks
+the AI chat agent and the AI narration panel in Insight Studio.
+
+  1. Get a free Gemini API key: https://aistudio.google.com/apikey
+
+  2. Create (or edit) this file — it is git-ignored, never committed:
+         backend\.env.dev.local
+
+     With these two lines:
+         GEMINI_API_KEY=your-key-here
+         LLM_CREDENTIAL_MODE=deployment
+
+  3. Restart the backend + workers to pick it up:
+
+     docker compose -f docker-compose.yml -f docker-compose.dev.yml ^
+       up -d --force-recreate backend worker agent-worker dashboard-worker beat
+
+     (On Git Bash / macOS / Linux, replace the "^" line-continuation above
+     with "\" instead, or just put the whole command on one line.)
+
+--------------------------------------------------------------------------------
+ 6) USEFUL DIAGNOSTIC / TROUBLESHOOTING COMMANDS
+--------------------------------------------------------------------------------
+  # See what's running and its health
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml ps
+
+  # Tail logs for everything
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f
+
+  # Tail logs for just the backend
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f backend
+
+  # Rebuild just one service after a code change (e.g. frontend)
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build frontend
+
+  # Quick health checks once it's running
+  curl http://localhost:8000/api/health
+  curl http://localhost:5173
+
+--------------------------------------------------------------------------------
+ 7) RUNNING THE BACKEND TEST SUITE (optional, for development)
+--------------------------------------------------------------------------------
+This runs on your host machine (not in Docker) and needs the backend's own
+Python virtual environment, which already exists in this repo.
+
+  cd "D:\ai data visualization project\insightmind\backend"
+  venv\Scripts\activate
+  python -m pytest -q
+
+  # Just the Data Science engine + API tests:
+  python -m pytest tests\test_data_science_*.py -q
+
+--------------------------------------------------------------------------------
+ 8) RUNNING THE FRONTEND CHECKS (optional, for development)
+--------------------------------------------------------------------------------
+  cd "D:\ai data visualization project\insightmind\frontend"
+  npm install          (only needed once, or after dependency changes)
+  npm run build         REM type-checks and production-builds the app
+  npm test               REM runs the Vitest suite
+
+--------------------------------------------------------------------------------
+ 9) THE OTHER SETUP — real accounts instead of the dev stack (optional)
+--------------------------------------------------------------------------------
+Only do this if you specifically want to run against a real Supabase
+project and a real LLM key instead of the zero-setup dev stack above.
+Full details are in README.md under "Quick start with Docker" and
+"Manual setup". Short version:
+
+  1. Create a free Supabase project: https://supabase.com
+  2. Get a Gemini (or Groq) API key: https://aistudio.google.com
+  3. cd "D:\ai data visualization project\insightmind"
+  4. copy backend\.env.example backend\.env      (then fill in your keys)
+  5. copy frontend\.env.example frontend\.env    (then fill in your keys)
+  6. docker compose up --build
+
+================================================================================
+ TL;DR — the only commands most people need
+================================================================================
+  1. Start Docker Desktop, wait for it to be ready.
+  2. cd "D:\ai data visualization project\insightmind"
+  3. docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+  4. Open http://localhost:5173
+  5. When done:  docker compose -f docker-compose.yml -f docker-compose.dev.yml down
+================================================================================
